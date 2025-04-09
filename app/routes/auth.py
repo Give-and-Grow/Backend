@@ -1,6 +1,16 @@
 from flask import Blueprint, request, jsonify
-from ..services.auth_service import signup_service, login_service, verify_service, reset_password_request_service, reset_password_service
 from flask_jwt_extended import jwt_required
+from ..services.auth_service import (
+    signup_service, 
+    login_service,
+    verify_service, 
+    reset_password_request_service, 
+    reset_password_service,
+    logout_service,
+    resend_code_service,
+    get_users_by_year_service
+)
+
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -8,9 +18,16 @@ auth_bp = Blueprint('auth', __name__)
 def signup():
     data = request.get_json()
     name = data.get('name')
+    last_name = data.get('last_name')
     email = data.get('email')
     password = data.get('password')
-    response, status = signup_service(name, email, password)
+    day = data.get('day')
+    month = data.get('month')
+    year = data.get('year')
+    gender = data.get('gender')
+    phone_number = data.get('phone_number')
+
+    response, status = signup_service(name, email, password, last_name, day, month, year, gender, phone_number)
     return jsonify(response), status
 
 @auth_bp.route('/login', methods=['POST'])
@@ -24,8 +41,16 @@ def login():
 @auth_bp.route('/verify', methods=['POST'])
 def verify():
     data = request.get_json()
+    email = data.get('email')
     code = data.get('code')
-    response, status = verify_service(code)
+    response, status = verify_service(email, code)
+    return jsonify(response), status
+
+@auth_bp.route('/resend-code', methods=['POST'])
+def resend_code():
+    data = request.get_json()
+    email = data.get('email')
+    response, status = resend_code_service(email)
     return jsonify(response), status
 
 @auth_bp.route('/reset-password-request', methods=['POST'])
@@ -42,3 +67,14 @@ def reset_password():
     new_password = data.get('new_password')
     response, status = reset_password_service(code, new_password)
     return jsonify(response), status
+
+@auth_bp.route('/logout', methods=['POST'])
+@jwt_required()
+def logout():
+    response, status = logout_service()  
+    return jsonify(response), status  
+
+@auth_bp.route('/users/by_year/<int:year>', methods=['GET'])
+def get_users_by_year(year):
+    result = get_users_by_year_service(year)
+    return jsonify(result), 200
