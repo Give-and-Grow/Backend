@@ -14,13 +14,21 @@ from flask_jwt_extended import (
 from bcrypt import checkpw, hashpw, gensalt
 from datetime import datetime, timedelta, timezone
 
+from app.schemas.password_schema import PasswordValidationSchema
+from marshmallow import ValidationError
+
 import random
 import string
 
 def signup_service(name, email, password, last_name, day, month, year, gender, phone_number):
     if User.query.filter_by(email=email).first():
         return {"msg": "Email already exists"}, 400
-
+    
+    try:
+        PasswordValidationSchema().load({"password": password})
+    except ValidationError as err:
+        return {"msg": "Invalid password", "errors": err.messages}, 400
+        
     username = generate_username(name)
     verification_code = ''.join(random.choices(string.digits, k=6))
     expiry_time = datetime.now(timezone.utc) + timedelta(minutes=10)
@@ -63,7 +71,7 @@ def login_service(identifier, password):
     if not user.is_verified:
         return {"msg": "Email not verified"}, 403
 
-    token = create_access_token(identity=str(user.id))  
+    token = create_access_token(identity=str(user.id))
     return {"token": token}, 200
 
 def logout_service():
