@@ -1,41 +1,43 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from ..services.auth_service import (
-    signup_service, 
+    signup_service,
     login_service,
-    verify_service, 
-    reset_password_request_service, 
+    verify_service,
+    resend_code_service,
+    reset_password_request_service,
     reset_password_service,
     logout_service,
-    resend_code_service,
     get_users_by_year_service
 )
-
 
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/signup', methods=['POST'])
+
 def signup():
     data = request.get_json()
-    name = data.get('name')
-    last_name = data.get('last_name')
+    if not data:
+        return jsonify({"msg": "No data provided"}), 400
+
     email = data.get('email')
     password = data.get('password')
-    day = data.get('day')
-    month = data.get('month')
-    year = data.get('year')
-    gender = data.get('gender')
-    phone_number = data.get('phone_number')
+    role = data.get('role')
 
-    response, status = signup_service(name, email, password, last_name, day, month, year, gender, phone_number)
+    if not email or not password or not role:
+        return jsonify({"msg": "Email, password, and role are required"}), 400
+    data.pop('email', None)
+    data.pop('password', None)
+    data.pop('role', None)
+    response, status = signup_service(email=email, password=password, role=role, **data)
     return jsonify(response), status
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    username = data.get('username')
+    email = data.get('username')
     password = data.get('password')
-    response, status = login_service(username, password)
+    response, status = login_service(email, password)
     return jsonify(response), status
 
 @auth_bp.route('/verify', methods=['POST'])
@@ -71,10 +73,11 @@ def reset_password():
 @auth_bp.route('/logout', methods=['POST'])
 @jwt_required()
 def logout():
-    response, status = logout_service()  
-    return jsonify(response), status  
+    response, status = logout_service()
+    return jsonify(response), status
 
-@auth_bp.route('/users/by_year/<int:year>', methods=['GET'])
+@auth_bp.route('/users/<int:year>', methods=['GET'])
+@jwt_required()
 def get_users_by_year(year):
-    result = get_users_by_year_service(year)
-    return jsonify(result), 200
+    response, status = get_users_by_year_service(year)
+    return jsonify(response), status

@@ -12,12 +12,12 @@ class Config:
     
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
 
-    #  # JWT Configuration
-    # JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', '123')
-    # JWT_BLACKLIST_ENABLED = True  # enable blacklist feature
-    # JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']  # check both access and refresh tokens
-    # JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=30)  # will be changed to 2hours after publishing 
-    # JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)    # refresh tokens expire after 30 days
+    # JWT Configuration
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', '123')
+    JWT_BLACKLIST_ENABLED = True  
+    JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']  
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=30)   
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)    
 
 
     # Mail settings
@@ -26,3 +26,4 @@ class Config:
     MAIL_USE_TLS = os.getenv('MAIL_USE_TLS') == 'True'
     MAIL_USERNAME = os.getenv('MAIL_USERNAME')
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
+    MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER', 'baraa.shellbaya@gmail.com')
