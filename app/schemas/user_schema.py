@@ -1,57 +1,55 @@
-#backend/app/schemas/user_schema.py
-from marshmallow import Schema, fields, validate, validates, ValidationError
-from marshmallow.validate import Length, Regexp, OneOf
+from marshmallow import Schema, fields, validates, ValidationError, validates_schema
 from datetime import date
-import re
+from ..models.account import Role
 
+class UpdateUserProfileSchema(Schema):
+    username = fields.Str(required=False, allow_none=True)
+    name = fields.Str(required=False)
+    last_name = fields.Str(required=False)
+    phone_number = fields.Str(required=False, allow_none=True)
+    gender = fields.Str(required=False, allow_none=True)
+    date_of_birth = fields.Date(required=False, allow_none=True)
+    city = fields.Str(required=False, allow_none=True)
+    village = fields.Str(required=False, allow_none=True)
+    bio = fields.Str(required=False, allow_none=True)
+    profile_picture = fields.Str(required=False, allow_none=True)
+    experience = fields.Str(required=False, allow_none=True)
+    identity_picture = fields.Str(required=False, allow_none=True)
+    skills = fields.List(fields.Str(), required=False, allow_none=True)
 
-class UpdateProfileSchema(Schema):
-    username = fields.Str(validate=Length(min=3, max=30))
-    name = fields.Str(validate=Length(min=2, max=50))
-    last_name = fields.Str(validate=Length(min=2, max=50))
-    phone_number = fields.Str(validate=Regexp(r'^\+?\d{7,15}$', error="Invalid phone number"))
-    gender = fields.Str(validate=OneOf(["male", "female"]))
-    city = fields.Str(validate=Length(min=2, max=50))
-    village = fields.Str(validate=Length(min=2, max=50))
-    bio = fields.Str(validate=Length(max=250))
-    experience = fields.Str(validate=Length(max=250))
-    date_of_birth = fields.Date()  
-    profile_picture = fields.Url(error="Invalid URL")
-    identity_picture = fields.Url(error="Invalid URL")
+    @validates('gender')
+    def validate_gender(self, value):
+        if value and value.lower() not in ['male', 'female', 'other']:
+            raise ValidationError("Gender must be 'male', 'female', or 'other'")
 
-#backend/app/schemas/user_schema.py
+class UpdateOrgProfileSchema(Schema):
+    username = fields.Str(required=False, allow_none=True)
+    name = fields.Str(required=False)
+    description = fields.Str(required=False, allow_none=True)
+    phone = fields.Str(required=False, allow_none=True)
+    logo = fields.Str(required=False, allow_none=True)
+    address = fields.Str(required=False, allow_none=True)
+
+class UpdateAdminProfileSchema(Schema):
+    username = fields.Str(required=False, allow_none=True)
+    name = fields.Str(required=False, allow_none=True)
+    role_level = fields.Str(required=False)
+
+from marshmallow import Schema, fields, validates_schema, ValidationError
+
 class ChangePasswordSchema(Schema):
-    old_password = fields.Str(required=True, validate=validate.Length(min=8, max=128), error_messages={
-        "required": "Old password is required",
-        "invalid": "Old password must be at least 8 characters"
-    })
-    new_password = fields.Str(required=True, validate=validate.Length(min=8, max=128), error_messages={
-        "required": "New password is required",
-        "invalid": "New password must be at least 8 characters"
-    })
-    confirm_new_password = fields.Str(required=True, validate=validate.Length(min=8, max=128), error_messages={
-        "required": "Password confirmation is required",
-        "invalid": "Password confirmation must be at least 8 characters"
-    })
+    old_password = fields.Str(required=True)
+    new_password = fields.Str(required=True)
+    confirm_new_password = fields.Str(required=True)
 
-    @validates("new_password")
-    def validate_new_password(self, value):
-        # تحقق من قوة كلمة المرور
-        if not re.search(r"[A-Z]", value):
-            raise ValidationError("New password must contain at least one uppercase letter")
-        if not re.search(r"[a-z]", value):
-            raise ValidationError("New password must contain at least one lowercase letter")
-        if not re.search(r"\d", value):
-            raise ValidationError("New password must contain at least one number")
-        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", value):
-            raise ValidationError("New password must contain at least one special character")
+    @validates_schema
+    def validate_passwords(self, data, **kwargs):
+        old_password = data.get('old_password')
+        new_password = data.get('new_password')
+        confirm_new_password = data.get('confirm_new_password')
 
-        # تحقق من عدم تطابق كلمة المرور الجديدة مع القديمة
-        if value == self.context.get("old_password"):
-            raise ValidationError("New password must be different from old password")
+        if old_password == new_password:
+            raise ValidationError("New password must be different from old password", field_name="new_password")
 
-    @validates("confirm_new_password")
-    def validate_confirm_new_password(self, value):
-        # تحقق من تطابق كلمة المرور الجديدة مع التأكيد
-        if value != self.context.get("new_password"):
-            raise ValidationError("New password and confirmation do not match")
+        if new_password != confirm_new_password:
+            raise ValidationError("Password confirmation does not match", field_name="confirm_new_password")

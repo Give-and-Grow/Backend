@@ -42,7 +42,7 @@ pip install -r requirements.txt
 ### 2-Run the Flask app
 
 ```bash
-python app.py
+python run.py
 ```
 
 ### 3-Open your browser and navigate to http://127.0.0.1:5000/ to see the app in action.
@@ -88,4 +88,11 @@ git commit -m "Your message"
 
 ```bash
 git push origin newBrnach
+--Create Pull Request
+--Merge Pull Request
+git checkout main
+git pull origin main
+git branch -d newBrnach
+git push origin --delete newBrnach
+git checkout -b new-feature
 ```
