@@ -1,0 +1,9 @@
+@echo off
+echo Running isort...
+isort app/
+
+echo Running black...
+black app/
+
+echo Running flake8...
+flake8 app/

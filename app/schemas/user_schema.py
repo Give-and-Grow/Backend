@@ -1,6 +1,16 @@
-from marshmallow import Schema, fields, validates, ValidationError, validates_schema
+#Backend/app/schemas/user_schema.py
 from datetime import date
+
+from marshmallow import (
+    Schema,
+    ValidationError,
+    fields,
+    validates,
+    validates_schema,
+)
+
 from ..models.account import Role
+
 
 class UpdateUserProfileSchema(Schema):
     username = fields.Str(required=False, allow_none=True)
@@ -17,10 +27,13 @@ class UpdateUserProfileSchema(Schema):
     identity_picture = fields.Str(required=False, allow_none=True)
     skills = fields.List(fields.Str(), required=False, allow_none=True)
 
-    @validates('gender')
+    @validates("gender")
     def validate_gender(self, value):
-        if value and value.lower() not in ['male', 'female', 'other']:
-            raise ValidationError("Gender must be 'male', 'female', or 'other'")
+        if value and value.lower() not in ["male", "female", "other"]:
+            raise ValidationError(
+                "Gender must be 'male', 'female', or 'other'"
+            )
+
 
 class UpdateOrgProfileSchema(Schema):
     username = fields.Str(required=False, allow_none=True)
@@ -30,12 +43,15 @@ class UpdateOrgProfileSchema(Schema):
     logo = fields.Str(required=False, allow_none=True)
     address = fields.Str(required=False, allow_none=True)
 
+
 class UpdateAdminProfileSchema(Schema):
     username = fields.Str(required=False, allow_none=True)
     name = fields.Str(required=False, allow_none=True)
     role_level = fields.Str(required=False)
 
-from marshmallow import Schema, fields, validates_schema, ValidationError
+
+from marshmallow import Schema, ValidationError, fields, validates_schema
+
 
 class ChangePasswordSchema(Schema):
     old_password = fields.Str(required=True)
@@ -44,12 +60,18 @@ class ChangePasswordSchema(Schema):
 
     @validates_schema
     def validate_passwords(self, data, **kwargs):
-        old_password = data.get('old_password')
-        new_password = data.get('new_password')
-        confirm_new_password = data.get('confirm_new_password')
+        old_password = data.get("old_password")
+        new_password = data.get("new_password")
+        confirm_new_password = data.get("confirm_new_password")
 
         if old_password == new_password:
-            raise ValidationError("New password must be different from old password", field_name="new_password")
+            raise ValidationError(
+                "New password must be different from old password",
+                field_name="new_password",
+            )
 
         if new_password != confirm_new_password:
-            raise ValidationError("Password confirmation does not match", field_name="confirm_new_password")
+            raise ValidationError(
+                "Password confirmation does not match",
+                field_name="confirm_new_password",
+            )
