@@ -4,7 +4,7 @@ import enum
 from sqlalchemy import Enum, event
 from sqlalchemy.sql import func
 
-from app import db
+from ..extensions import db
 from app.models.opportunity import Opportunity  # تأكد من استيراد الموديل
 
 

@@ -39,6 +39,7 @@ class OrganizationDetails(db.Model):
         lazy=True,
     )
 
-    
+    opportunities = db.relationship("Opportunity", backref="organization", lazy=True)
+
     def __repr__(self):
         return f"<OrganizationDetails {self.name}>"

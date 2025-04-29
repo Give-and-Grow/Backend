@@ -36,9 +36,13 @@ class Account(db.Model):
     organization_details = db.relationship(
     "OrganizationDetails", backref="account", uselist=False
     )
+    user_details = db.relationship(
+        "UserDetails", backref="account", uselist=False
+    )
+    admin_details = db.relationship(
+        "AdminDetails", backref="account", uselist=False
+    )
     
-
-
     def set_password(self, password):
         self.password = hashpw(password.encode("utf-8"), gensalt()).decode(
             "utf-8"

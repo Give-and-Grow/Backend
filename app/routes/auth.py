@@ -1,6 +1,8 @@
 #Backend/app/routes/auth.py
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
+from flask_jwt_extended import get_jwt
+
 
 from ..services.auth_service import (
     create_admin_account_service,
@@ -101,3 +103,14 @@ def logout():
 def get_users_by_year(year):
     response, status = get_users_by_year_service(year)
     return jsonify(response), status
+
+@auth_bp.route('/status', methods=['GET'])
+@jwt_required()
+def status():
+    current_user_id = get_jwt_identity() 
+    claims = get_jwt()  
+
+    return jsonify({
+        'message': f"Logged in as {current_user_id}",
+        'role': claims['role']
+    }), 200
