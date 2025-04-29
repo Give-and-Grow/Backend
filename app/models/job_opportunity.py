@@ -1,10 +1,16 @@
 # Backend/app/models/job_opportunity.py
-class JobOpportunity(BaseOpportunity):
+from ..extensions import db
+
+class JobOpportunity(db.Model):
     __tablename__ = "job_opportunity"
 
-    id = db.Column(
-        db.Integer, db.ForeignKey("opportunity.id"), primary_key=True
+    job_id = db.Column(
+        db.Integer, primary_key=True, unique=True
+    )
+    opportunity_id = db.Column(
+        db.Integer, db.ForeignKey("opportunity.id"), unique=True, nullable=False
     )
     required_points = db.Column(db.Integer)
 
-    __mapper_args__ = {"polymorphic_identity": OpportunityType.JOB.value}
+    def __repr__(self):
+        return f"<JobOpportunity {self.job_id or self.opportunity_id}>"

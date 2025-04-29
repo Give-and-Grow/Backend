@@ -1,8 +1,8 @@
-# Backend/app/models/opportunity_skills.py
+# Backend/app/models/opportunity_tags.py
 from ..extensions import db
 
-opportunity_skills = db.Table(
-    "opportunity_skills",
+opportunity_tags = db.Table(
+    "opportunity_tags",
     db.Column(
         "opportunity_id",
         db.Integer,
@@ -10,6 +10,6 @@ opportunity_skills = db.Table(
         primary_key=True,
     ),
     db.Column(
-        "skill_id", db.Integer, db.ForeignKey("skill.id"), primary_key=True
+        "tag_id", db.Integer, db.ForeignKey("tag.id"), primary_key=True
     ),
 )

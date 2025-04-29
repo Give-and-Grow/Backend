@@ -12,14 +12,3 @@ class Tag(db.Model):
         db.DateTime, server_default=func.now(), onupdate=func.now()
     )
 
-
-opportunity_tags = db.Table(
-    "opportunity_tags",
-    db.Column(
-        "opportunity_id",
-        db.Integer,
-        db.ForeignKey("opportunity.id"),
-        primary_key=True,
-    ),
-    db.Column("tag_id", db.Integer, db.ForeignKey("tag.id"), primary_key=True),
-)

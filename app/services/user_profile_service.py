@@ -15,7 +15,7 @@ from ..schemas.user_schema import (
     UpdateUserProfileSchema,
 )
 from ..utils.duration_since import get_duration_since
-
+from ..utils.location import get_lat_lon_from_location
 
 def get_own_profile_service(account_id):
     account = Account.query.get(account_id)
@@ -49,8 +49,10 @@ def get_own_profile_service(account_id):
                     if user_details.date_of_birth
                     else None
                 ),
+                "country": user_details.country,
                 "city": user_details.city,
                 "village": user_details.village,
+                
                 "bio": user_details.bio,
                 "profile_picture": user_details.profile_picture,
                 "experience": user_details.experience,
@@ -75,7 +77,7 @@ def get_own_profile_service(account_id):
                 "phone": org_details.phone,
                 "logo": org_details.logo,
                 "address": org_details.address,
-                "verified": org_details.verified,
+                "verified": org_details.proof_verification_status.value,
             }
         )
     elif account.role == Role.ADMIN:
@@ -127,11 +129,23 @@ def update_profile_service(account_id, data):
             ).first()
             if not user_details:
                 return {"msg": "User details not found"}, 404
+            
+            location_fields = ["country", "city", "village"]
+            location_parts = [validated_data.get(field) for field in location_fields if validated_data.get(field)]
+            location_string = ", ".join(location_parts) if location_parts else None
+
+            if location_string:
+                coords = get_lat_lon_from_location(location_string)
+                if coords:
+                    validated_data["latitude"] = coords["latitude"]
+                    validated_data["longitude"] = coords["longitude"]
+
             for field in [
                 "name",
                 "last_name",
                 "phone_number",
                 "gender",
+                "country",
                 "city",
                 "village",
                 "bio",
@@ -139,6 +153,8 @@ def update_profile_service(account_id, data):
                 "date_of_birth",
                 "profile_picture",
                 "identity_picture",
+                "latitude",
+                "longitude",
             ]:
                 if (
                     field in validated_data

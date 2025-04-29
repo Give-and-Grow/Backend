@@ -31,6 +31,9 @@ def create_app():
     from .routes.organization import organization_bp
     from .routes.public_organization import public_org_bp
     from .routes.user_profile import profile_bp
+    from .routes.opportunity_routes import opportunity_bp
+    from .routes.skill_routes import skill_bp
+    from .routes.user_skills_routes import user_skills_bp
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(profile_bp, url_prefix="/profile")
@@ -38,4 +41,7 @@ def create_app():
     app.register_blueprint(public_org_bp, url_prefix="/public/organizations")
     app.register_blueprint(admin_org_bp, url_prefix="/admin/organizations")
     app.register_blueprint(industry_bp, url_prefix="/industries")
+    app.register_blueprint(opportunity_bp, url_prefix="/opportunities")
+    app.register_blueprint(skill_bp, url_prefix="/skills")
+    app.register_blueprint(user_skills_bp, url_prefix="/user-skills")
     return app
