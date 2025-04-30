@@ -34,6 +34,8 @@ def create_app():
     from .routes.opportunity_routes import opportunity_bp
     from .routes.skill_routes import skill_bp
     from .routes.user_skills_routes import user_skills_bp
+    from .routes.dropdown import dropdown_bp
+    from .routes.tag_routes import tag_bp
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(profile_bp, url_prefix="/profile")
@@ -44,4 +46,7 @@ def create_app():
     app.register_blueprint(opportunity_bp, url_prefix="/opportunities")
     app.register_blueprint(skill_bp, url_prefix="/skills")
     app.register_blueprint(user_skills_bp, url_prefix="/user-skills")
+    app.register_blueprint(dropdown_bp, url_prefix="/dropdown")
+    app.register_blueprint(tag_bp, url_prefix="/tags")
+    
     return app

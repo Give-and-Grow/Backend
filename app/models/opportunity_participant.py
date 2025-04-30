@@ -33,6 +33,9 @@ class OpportunityParticipant(db.Model):
     attendance_status = db.Column(
         Enum(AttendanceStatus), default=AttendanceStatus.attended
     )
+    rated_at = db.Column(db.DateTime)
+    user = db.relationship('Account', back_populates='participants')
+    opportunity = db.relationship('Opportunity', back_populates='participants')
 
 
 # توزيع النقاط:

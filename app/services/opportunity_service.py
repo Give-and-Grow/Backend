@@ -1,5 +1,5 @@
 from app.models.organization_details import OrganizationDetails 
-from app.models.opportunity import Opportunity, OpportunityType
+from app.models.opportunity import Opportunity, OpportunityType,OpportunityStatus
 from app.models.volunteer_opportunity import VolunteerOpportunity
 from app.models.job_opportunity import JobOpportunity
 from app.extensions import db
@@ -26,13 +26,11 @@ class OpportunityService:
         if not organization_details:
             return {"msg": "Organization details not found"}, 404   
 
-        # Validate input using OpportunitySchema
         try:
             validated_data = OpportunitySchema().load(data)
         except ValidationError as e:
             return {"msg": "Validation error", "errors": e.messages}, 400
 
-        # Check at least 1 skill is required
         skills = validated_data.get("skills", [])
         if not skills or len(skills) == 0:
             return {"msg": "At least one skill is required"}, 400
@@ -58,25 +56,22 @@ class OpportunityService:
         db.session.add(opportunity)
         db.session.flush()
 
-        # Link skills
         skills = validated_data.get("skills", [])
         for skill_id in skills:
-            skill = Skill.query.get(skill_id)  # استعلام باستخدام ID
+            skill = Skill.query.get(skill_id)  
             if not skill:
-                return {"msg": f"Skill with ID {skill_id} not found"}, 400  # رسالة خطأ إذا لم يوجد المهارة
+                return {"msg": f"Skill with ID {skill_id} not found"}, 400  
 
-            opportunity.skills.append(skill)  # ربط المهارة بالفرصة
+            opportunity.skills.append(skill)  
 
-        # Link tags if available
         tags = validated_data.get("tags", [])
         for tag_id in tags:
-            tag = Tag.query.get(tag_id)  # استعلام باستخدام ID
+            tag = Tag.query.get(tag_id)  
             if not tag:
-                return {"msg": f"Tag with ID {tag_id} not found"}, 400  # رسالة خطأ إذا لم يوجد التاج
+                return {"msg": f"Tag with ID {tag_id} not found"}, 400 
 
-            opportunity.tags.append(tag)  # ربط التاج بالفرصة
+            opportunity.tags.append(tag)  
 
-        # Create volunteer or job opportunity details
         if validated_data["opportunity_type"] == "volunteer":
             volunteer_opportunity = VolunteerOpportunity(
                 opportunity_id=opportunity.id,
@@ -106,7 +101,7 @@ class OpportunityService:
             joinedload(Opportunity.tags),
             joinedload(Opportunity.volunteer_details),
             joinedload(Opportunity.job_details),
-        ).filter_by(id=opportunity_id).first()
+        ).filter_by(id=opportunity_id,is_deleted=False).first()
 
         if not opportunity:
             return {"msg": "Opportunity not found"}, 404
@@ -125,7 +120,7 @@ class OpportunityService:
             query = query.filter(Opportunity.opportunity_type == filters.get('type'))
         if 'status' in filters:
             query = query.filter(Opportunity.status == filters.get('status'))
-
+        query = query.filter(Opportunity.is_deleted == False)
         page = int(filters.get('page', 1))
         per_page = int(filters.get('per_page', 10))
 
@@ -139,80 +134,128 @@ class OpportunityService:
             "pages": pagination.pages
         }, 200
 
-    # @staticmethod
-    # def update_opportunity(current_user_id, opportunity_id, data):
-    #     opportunity = Opportunity.query.get(opportunity_id)
-    #     if not opportunity:
-    #         return {"msg": "Opportunity not found"}, 404
+    @staticmethod
+    def update_opportunity(current_user_id, opportunity_id, data):
+        opportunity = Opportunity.query.get(opportunity_id)
+        if not opportunity:
+            return {"msg": "Opportunity not found"}, 404
 
-    #     organization = OrganizationDetails.query.filter_by(account_id=current_user_id).first()
-    #     if opportunity.organization_id != organization.id:
-    #         return {"msg": "Unauthorized"}, 403
+        current_account = Account.query.get(current_user_id)
+        if not current_account:
+            return {"msg": "Account not found"}, 404
 
-    #     try:
-    #         validated_data = OpportunitySchema().load(data, partial=True)
-    #     except ValidationError as e:
-    #         return {"msg": "Validation error", "errors": e.messages}, 400
+        if current_account.role != Role.ORGANIZATION:
+            return {"msg": "Only an organization can create opportunities"}, 403
 
-    #     for key, value in validated_data.items():
-    #         if hasattr(opportunity, key):
-    #             setattr(opportunity, key, value)
+        organization_details = OrganizationDetails.query.filter_by(account_id=current_user_id).first()
+        
+        if not organization_details:
+            return {"msg": "Organization details not found"}, 404 
+        if opportunity.organization_id != organization_details.id:
+            return {"msg": "Unauthorized"}, 403
+        try:
+            validated_data = OpportunitySchema().load(data, partial=True)
+        except ValidationError as e:
+            return {"msg": "Validation error", "errors": e.messages}, 400
 
-    #     if "skills" in validated_data:
-    #         opportunity.skills.clear()
-    #         for skill_id in validated_data["skills"]:
-    #             skill = Skill.query.get(skill_id)
-    #             if skill:
-    #                 opportunity.skills.append(skill)
+        for key, value in validated_data.items():
+            if hasattr(opportunity, key):
+                setattr(opportunity, key, value)
 
-    #     if "tags" in validated_data:
-    #         opportunity.tags.clear()
-    #         for tag_id in validated_data["tags"]:
-    #             tag = Tag.query.get(tag_id)
-    #             if tag:
-    #                 opportunity.tags.append(tag)
+        if "skills" in validated_data:
+            opportunity.skills.clear()
+            for skill_id in validated_data["skills"]:
+                skill = Skill.query.get(skill_id)
+                if skill:
+                    opportunity.skills.append(skill)
 
-    #     if opportunity.opportunity_type == OpportunityType.VOLUNTEER:
-    #         volunteer = opportunity.volunteer_details
-    #         if volunteer:
-    #             volunteer.max_participants = validated_data.get("max_participants", volunteer.max_participants)
-    #             volunteer.base_points = validated_data.get("base_points", volunteer.base_points)
-    #     elif opportunity.opportunity_type == OpportunityType.JOB:
-    #         job = opportunity.job_details
-    #         if job:
-    #             job.required_points = validated_data.get("required_points", job.required_points)
+        if "tags" in validated_data:
+            opportunity.tags.clear()
+            for tag_id in validated_data["tags"]:
+                tag = Tag.query.get(tag_id)
+                if tag:
+                    opportunity.tags.append(tag)
 
-    #     db.session.commit()
-    #     return {"msg": "Opportunity updated successfully"}, 200
+        if opportunity.opportunity_type == OpportunityType.VOLUNTEER:
+            volunteer = opportunity.volunteer_details
+            if volunteer:
+                volunteer.max_participants = validated_data.get("max_participants", volunteer.max_participants)
+                volunteer.base_points = validated_data.get("base_points", volunteer.base_points)
+        elif opportunity.opportunity_type == OpportunityType.JOB:
+            job = opportunity.job_details
+            if job:
+                job.required_points = validated_data.get("required_points", job.required_points)
 
-    # @staticmethod
-    # def delete_opportunity(current_user_id, opportunity_id):
-    #     opportunity = Opportunity.query.get(opportunity_id)
-    #     if not opportunity:
-    #         return {"msg": "Opportunity not found"}, 404
+        db.session.commit()
+        return {"msg": "Opportunity updated successfully"}, 200
 
-    #     organization = OrganizationDetails.query.filter_by(account_id=current_user_id).first()
-    #     if opportunity.organization_id != organization.id:
-    #         return {"msg": "Unauthorized"}, 403
+    @staticmethod
+    def delete_opportunity(current_user_id, opportunity_id):
+        opportunity = Opportunity.query.get(opportunity_id)
+        if not opportunity:
+            return {"msg": "Opportunity not found"}, 404
 
-    #     db.session.delete(opportunity)
-    #     db.session.commit()
-    #     return {"msg": "Opportunity deleted successfully"}, 200
+        organization = OrganizationDetails.query.filter_by(account_id=current_user_id).first()
+        if opportunity.organization_id != organization.id:
+            return {"msg": "Unauthorized"}, 403
 
-    # @staticmethod
-    # def change_status(current_user_id, opportunity_id, status):
-    #     opportunity = Opportunity.query.get(opportunity_id)
-    #     if not opportunity:
-    #         return {"msg": "Opportunity not found"}, 404
+        opportunity.is_deleted = True
+        db.session.commit()
 
-    #     organization = OrganizationDetails.query.filter_by(account_id=current_user_id).first()
-    #     if opportunity.organization_id != organization.id:
-    #         return {"msg": "Unauthorized"}, 403
+        return {"msg": "Opportunity deleted successfully"}, 200
 
-    #     try:
-    #         opportunity.status = OpportunityStatus(status)
-    #     except ValueError:
-    #         return {"msg": "Invalid status"}, 400
+    @staticmethod
+    def get_opportunities_by_organization(current_user_id, filters):
+        current_account = Account.query.get(current_user_id)
+        if not current_account:
+            return {"msg": "Account not found"}, 404
 
-    #     db.session.commit()
-    #     return {"msg": "Status updated successfully"}, 200
+        if current_account.role != Role.ORGANIZATION:
+            return {"msg": "Only an organization can create opportunities"}, 403
+
+        organization= OrganizationDetails.query.filter_by(account_id=current_user_id).first()
+        if not organization:
+            return {"msg": "Organization details not found"}, 404 
+        
+
+        opportunities = Opportunity.query.filter_by(organization_id=organization.id)
+        
+        if 'status' in filters:
+            opportunities = opportunities.filter(Opportunity.status == filters.get('status'))
+        if 'type' in filters:
+            opportunities = opportunities.filter(Opportunity.opportunity_type == filters.get('type'))
+
+        opportunities = opportunities.all()
+
+        if not opportunities:
+            return {"msg": "No opportunities found for this organization"}, 404
+
+        opportunities_list = [OpportunityGetSchema().dump(opportunity) for opportunity in opportunities]
+        
+        return {"opportunities": opportunities_list}, 200
+
+
+    @staticmethod
+    def change_status(current_user_id, opportunity_id, status):
+        opportunity = Opportunity.query.get(opportunity_id)
+        
+        if not opportunity:
+            return {"msg": "Opportunity not found"}, 404
+
+        organization = OrganizationDetails.query.filter_by(account_id=current_user_id).first()
+        if not organization:
+            return {"msg": "Organization not found"}, 404
+        
+        if opportunity.organization_id != organization.id:
+            return {"msg": "Unauthorized to modify this opportunity"}, 403
+
+        if opportunity.status.value == status:
+            return {"msg": f"Status is already '{status}'"}, 200
+        
+        try:
+            opportunity.status = OpportunityStatus(status)
+        except ValueError:
+            return {"msg": f"Invalid status: {status}. Valid statuses are {', '.join([s.value for s in OpportunityStatus])}"}, 400
+
+        db.session.commit()
+        return {"msg": "Status updated successfully"}, 200

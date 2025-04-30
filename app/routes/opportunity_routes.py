@@ -21,22 +21,38 @@ def list_opportunities():
     filters = request.args  # يمكنك تمرير فلترة بالـ query string
     return OpportunityService.list_opportunities(filters)
 
-# @opportunity_bp.route('/<int:opportunity_id>/update', methods=['PUT'])
-# @jwt_required()
-# def update_opportunity(opportunity_id):
-#     current_user_id = get_jwt_identity()
-#     data = request.get_json()
-#     return OpportunityService.update_opportunity(current_user_id, opportunity_id, data)
+@opportunity_bp.route('/<int:opportunity_id>', methods=['PUT'])
+@jwt_required()
+def update_opportunity(opportunity_id):
+    current_user_id = get_jwt_identity()
+    data = request.get_json()
+    return OpportunityService.update_opportunity(current_user_id, opportunity_id, data)
 
-# @opportunity_bp.route('/<int:opportunity_id>/delete', methods=['DELETE'])
-# @jwt_required()
-# def delete_opportunity(opportunity_id):
-#     current_user_id = get_jwt_identity()
-#     return OpportunityService.delete_opportunity(current_user_id, opportunity_id)
+@opportunity_bp.route('/<int:opportunity_id>', methods=['DELETE'])
+@jwt_required()
+def delete_opportunity(opportunity_id):
+    current_user_id = get_jwt_identity()
+    return OpportunityService.delete_opportunity(current_user_id, opportunity_id)
 
-# @opportunity_bp.route('/<int:opportunity_id>/change-status', methods=['PATCH'])
-# @jwt_required()
-# def change_status(opportunity_id):
-#     current_user_id = get_jwt_identity()
-#     data = request.get_json()
-#     return OpportunityService.change_status(current_user_id, opportunity_id, data.get('status'))
+@opportunity_bp.route('/organization', methods=['GET'])
+@jwt_required()
+def get_opportunities_by_organization():
+    current_user_id = get_jwt_identity()
+    filters = request.args  # أو استخدم request.get_json() لو كانت البيانات JSON
+
+    return OpportunityService.get_opportunities_by_organization(current_user_id, filters)
+
+
+@opportunity_bp.route('/<int:opportunity_id>/change-status', methods=['PATCH'])
+@jwt_required()
+def change_status(opportunity_id):
+    current_user_id = get_jwt_identity()
+    data = request.get_json()
+    
+    # التأكد من وجود "status" في البيانات
+    status = data.get('status')
+    if not status:
+        return {"msg": "Missing 'status' in request data"}, 400
+    
+    # استدعاء خدمة تغيير الحالة
+    return OpportunityService.change_status(current_user_id, opportunity_id, status)

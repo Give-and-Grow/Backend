@@ -12,9 +12,7 @@ from app.models.organization_details import OrganizationDetails
 
 skill_bp = Blueprint('skill', __name__)
 
-# ==========================
-# Admin APIs for managing skills
-# ==========================
+
 
 @skill_bp.route('/', methods=['POST'])
 @admin_required
@@ -66,9 +64,6 @@ def delete_skill(skill_id):
 
     return jsonify({"message": "Skill deleted successfully."})
 
-# ==========================
-# Organization APIs for assigning skills to opportunities
-# ==========================
 
 @skill_bp.route('/assign/<int:opportunity_id>', methods=['POST'])
 @organization_required
@@ -94,7 +89,6 @@ def assign_skills_to_opportunity(opportunity_id):
         if not skill:
             return jsonify({"error": f"Skill with id {skill_id} not found."}), 404
 
-        # Avoid duplicate assignment
         exists = db.session.execute(
             db.select(opportunity_skills)
             .filter_by(opportunity_id=opportunity_id, skill_id=skill_id)
@@ -136,9 +130,7 @@ def remove_skill_from_opportunity(opportunity_id, skill_id):
 
     return jsonify({"message": "Skill removed from opportunity successfully."})
 
-# ==========================
-# Public APIs
-# ==========================
+
 
 @skill_bp.route('/', methods=['GET'])
 def list_skills():
