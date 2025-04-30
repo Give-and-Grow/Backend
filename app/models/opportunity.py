@@ -33,6 +33,7 @@ class Opportunity(db.Model):
     application_link = db.Column(db.String(255))
     contact_email = db.Column(db.String(255))
     opportunity_type = db.Column(db.Enum(OpportunityType), nullable=False) 
+    is_deleted = db.Column(db.Boolean, default=False)  
 
     created_at = db.Column(
         db.DateTime(timezone=True), server_default=func.now()
