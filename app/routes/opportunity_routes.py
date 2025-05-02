@@ -2,6 +2,10 @@ from flask import Blueprint, request, jsonify
 from app.services.opportunity_service import OpportunityService
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.utils.decorators import organization_required
+from app.utils.distance import haversine_distance
+from app.models.opportunity import Opportunity
+from app.models.user_details import UserDetails  
+from app.extensions import db
 
 opportunity_bp = Blueprint('opportunity_bp', __name__)
 
@@ -56,3 +60,42 @@ def change_status(opportunity_id):
     
     # استدعاء خدمة تغيير الحالة
     return OpportunityService.change_status(current_user_id, opportunity_id, status)
+
+
+# @opportunity_bp.route("/nearby_opportunities", methods=["GET"])
+# @jwt_required()  # تأكد من وجود هذا الديكوريتر!
+# def get_nearby_opportunities():
+#     current_user_id = get_jwt_identity()  # هذا يرجع account_id
+
+#     max_distance_km = float(request.args.get("max_distance", 50))
+
+#     user = UserDetails.query.filter_by(account_id=current_user_id).first()
+#     if not user or user.latitude is None or user.longitude is None:
+#         return jsonify({"msg": "User location not found"}), 404
+
+#     user_lat = user.latitude
+#     user_lon = user.longitude
+
+#     all_opps = Opportunity.query.all()
+#     nearby_opps = []
+
+#     for opp in all_opps:
+#         if opp.latitude is not None and opp.longitude is not None:
+#             distance = haversine_distance(user_lon, user_lat, opp.longitude, opp.latitude)
+#             if distance <= max_distance_km:
+#                 opp_data = {
+#                     "id": opp.id,
+#                     "title": opp.title,
+#                     "description": opp.description,
+#                     "distance_km": round(distance, 2),
+#                 }
+#                 nearby_opps.append(opp_data)
+
+#     return jsonify({"opportunities": nearby_opps}), 200
+
+@opportunity_bp.route("/nearby_opportunities", methods=["GET"])
+@jwt_required()
+def get_nearby_opportunities():
+    current_user_id = get_jwt_identity()
+    max_distance_km = float(request.args.get("max_distance", 50))  
+    return OpportunityService.get_nearby_opportunities(current_user_id, max_distance_km)

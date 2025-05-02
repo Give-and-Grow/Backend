@@ -81,7 +81,7 @@ git checkout -b newBrnach
 
 ```bash
 git add .
-git commit -m "Your message"
+git commit -m "nearby_opportunities"
 ```
 
 ### 3-Push to the branch

@@ -12,6 +12,10 @@ from app.models.skill import Skill
 from app.models.tag import Tag
 from app.utils.unique_opportunity import generate_unique_opportunity_name
 from app.utils.location import get_lat_lon_from_location
+from app.utils.distance import haversine_distance
+from app.models.user_details import UserDetails  
+from sqlalchemy import or_
+
 class OpportunityService:
     @staticmethod
     def create_opportunity(current_user_id,data):
@@ -259,3 +263,32 @@ class OpportunityService:
 
         db.session.commit()
         return {"msg": "Status updated successfully"}, 200
+
+    @staticmethod
+    def get_nearby_opportunities(current_user_id, max_distance_km):
+        user = UserDetails.query.filter_by(account_id=current_user_id).first()
+        if not user or user.latitude is None or user.longitude is None:
+            return {"msg": "User location not found"}, 404
+
+        user_lat = user.latitude
+        user_lon = user.longitude
+
+        all_opps = Opportunity.query.options(
+            joinedload(Opportunity.skills),
+            joinedload(Opportunity.tags),
+            joinedload(Opportunity.volunteer_details),
+            joinedload(Opportunity.job_details),
+        ).filter(or_(Opportunity.is_deleted == False, Opportunity.is_deleted == None))
+        
+
+        nearby_opps = []
+
+        for opp in all_opps:
+            if opp.latitude is not None and opp.longitude is not None:
+                distance = haversine_distance(user_lon, user_lat, opp.longitude, opp.latitude)
+                if distance <= max_distance_km:
+                    opp_data = OpportunityGetSchema().dump(opp)
+                    opp_data["distance_km"] = round(distance, 2)
+                    nearby_opps.append(opp_data)
+
+        return {"opportunities": nearby_opps}, 200
