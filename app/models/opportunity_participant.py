@@ -5,7 +5,8 @@ from sqlalchemy import Enum, event
 from sqlalchemy.sql import func
 
 from ..extensions import db
-from app.models.opportunity import Opportunity  # تأكد من استيراد الموديل
+from app.models.opportunity import Opportunity  
+from app.models.volunteer_opportunity import VolunteerOpportunity
 
 
 class AttendanceStatus(enum.Enum):
@@ -34,9 +35,29 @@ class OpportunityParticipant(db.Model):
         Enum(AttendanceStatus), default=AttendanceStatus.attended
     )
     rated_at = db.Column(db.DateTime)
-    user = db.relationship('Account', back_populates='participants')
+    user_id = db.Column(db.Integer, db.ForeignKey("user_details.id"), nullable=False)
     opportunity = db.relationship('Opportunity', back_populates='participants')
+    
+    def __repr__(self):
+        # هنا نقوم بإرجاع القيمة النصية فقط لـ attendance_status
+        return f"<OpportunityParticipant {self.id}>"
 
+    # نحتاج لتحويل Enum إلى نص بشكل صحيح عند إرسال البيانات
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "attendance_status": self.attendance_status.value,  # استخدم name فقط لإرجاع النص
+            "completed": self.completed,
+            "joined_at": self.joined_at,
+            "points_earned": self.points_earned,
+            "rating": self.rating,
+            "user": {
+                "id": self.user.id,
+                "name": self.user.name,
+                "last_name": self.user.last_name,
+                "profile_picture": self.user.profile_picture,
+            },
+        }
 
 # توزيع النقاط:
 # 40% على الالتزام بالحضور
@@ -53,10 +74,8 @@ attendance_points_map = {
 @event.listens_for(OpportunityParticipant, "before_update")
 def calculate_points(mapper, connection, target):
     # جلب النقاط الأساسية من الفرصة
-    opportunity = db.session.get(Opportunity, target.opportunity_id)
-    base_points = (
-        opportunity.base_points if opportunity else 100
-    )  # القيمة الافتراضية 100
+    volunteer_opportunity = db.session.query(VolunteerOpportunity).filter_by(opportunity_id=target.opportunity_id).first()
+    base_points = volunteer_opportunity.base_points if volunteer_opportunity else 100  # القيمة الافتراضية 100
 
     # حساب نقاط الحضور
     status = (

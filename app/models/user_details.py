@@ -54,6 +54,9 @@ class UserDetails(db.Model):
     achievements = db.relationship(
         "UserAchievement", backref="user", lazy=True
     )
+    opportunities = db.relationship(
+        "OpportunityParticipant", backref="user", lazy=True
+    )
     points = db.relationship("UserPoints", backref="user", lazy=True)
 
     def __repr__(self):

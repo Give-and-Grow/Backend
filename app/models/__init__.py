@@ -16,6 +16,7 @@ from .tag import Tag
 from .opportunity import Opportunity, OpportunityType, OpportunityStatus
 from .opportunity_skills import opportunity_skills
 from .opportunity_tags import opportunity_tags
+from .opportunity_participant import OpportunityParticipant, AttendanceStatus
 
 # Auth
 from .token_blocklist import TokenBlocklist

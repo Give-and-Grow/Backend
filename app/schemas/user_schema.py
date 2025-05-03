@@ -78,3 +78,9 @@ class ChangePasswordSchema(Schema):
                 "Password confirmation does not match",
                 field_name="confirm_new_password",
             )
+
+class UserDetailsShortSchema(Schema):
+    id = fields.Int()
+    name = fields.Str()
+    last_name = fields.Str()
+    profile_picture = fields.Str()
