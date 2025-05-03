@@ -45,6 +45,9 @@ class Opportunity(db.Model):
     skills = db.relationship(
         "Skill", secondary="opportunity_skills", backref="opportunities"
     )
+    participants = db.relationship(
+        "OpportunityParticipant", back_populates="opportunity"
+    )
 
     volunteer_details = db.relationship(
         "VolunteerOpportunity", backref="opportunity", uselist=False
