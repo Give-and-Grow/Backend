@@ -37,6 +37,7 @@ def join_opportunity(opportunity_id):
 @opportunity_participant_bp.route('/opportunities/<int:opportunity_id>/withdraw', methods=['POST'])
 @jwt_required()
 def withdraw_from_opportunity(opportunity_id):
+    
     user_id = get_jwt_identity()
     return OpportunityService.withdraw_from_opportunity(user_id, opportunity_id)
 
