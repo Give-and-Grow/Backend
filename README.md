@@ -62,6 +62,7 @@ Ctrl+C
 ```bash
 pip freeze > requirements.txt
 ```
+
 ### To update DataBase, activate the virtual environment and run:
 
 ```bash
