@@ -58,5 +58,20 @@ class Opportunity(db.Model):
         "JobOpportunity", backref="opportunity", uselist=False
     )
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "location": self.location,
+            "opportunity_type": self.opportunity_type.value,
+            "skills": [skill.name for skill in self.skills],
+            "tags": [tag.name for tag in self.tags],
+            "start_date": str(self.start_date),
+            "end_date": str(self.end_date),
+            "image_url": self.image_url,
+            "contact_email": self.contact_email,
+        }
+
     def __repr__(self):
         return f"<Opportunity {self.id or self.organization_id}>"
