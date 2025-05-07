@@ -35,7 +35,6 @@ class OpportunityParticipant(db.Model):
         Enum(AttendanceStatus), default=AttendanceStatus.attended
     )
     rated_at = db.Column(db.DateTime)
-    user_id = db.Column(db.Integer, db.ForeignKey("user_details.id"), nullable=False)
     opportunity = db.relationship('Opportunity', back_populates='participants')
     
     def __repr__(self):

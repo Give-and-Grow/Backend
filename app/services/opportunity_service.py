@@ -209,6 +209,22 @@ class OpportunityService:
         return {"msg": "Opportunity deleted successfully"}, 200
 
     @staticmethod
+    def restore_opportunity(current_user_id, opportunity_id):
+        opportunity = Opportunity.query.get(opportunity_id)
+        if not opportunity:
+            return {"msg": "Opportunity not found"}, 404
+
+        organization = OrganizationDetails.query.filter_by(account_id=current_user_id).first()
+        if opportunity.organization_id != organization.id:
+            return {"msg": "Unauthorized"}, 403
+
+        opportunity.is_deleted = False
+        db.session.commit()
+
+        return {"msg": "Opportunity restored successfully"}, 200
+    
+
+    @staticmethod
     def get_opportunities_by_organization(current_user_id, filters):
         current_account = Account.query.get(current_user_id)
         if not current_account:
@@ -217,17 +233,23 @@ class OpportunityService:
         if current_account.role != Role.ORGANIZATION:
             return {"msg": "Only an organization can create opportunities"}, 403
 
-        organization= OrganizationDetails.query.filter_by(account_id=current_user_id).first()
+        organization = OrganizationDetails.query.filter_by(account_id=current_user_id).first()
         if not organization:
             return {"msg": "Organization details not found"}, 404 
-        
 
         opportunities = Opportunity.query.filter_by(organization_id=organization.id)
-        
+
         if 'status' in filters:
             opportunities = opportunities.filter(Opportunity.status == filters.get('status'))
+
         if 'type' in filters:
             opportunities = opportunities.filter(Opportunity.opportunity_type == filters.get('type'))
+
+        if 'is_deleted' in filters:
+            is_deleted_value = filters.get('is_deleted')
+            if isinstance(is_deleted_value, str):
+                is_deleted_value = is_deleted_value.lower() == 'true'
+            opportunities = opportunities.filter(Opportunity.is_deleted == is_deleted_value)
 
         opportunities = opportunities.all()
 

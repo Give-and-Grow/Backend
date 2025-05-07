@@ -22,7 +22,7 @@ def get_opportunity(opportunity_id):
 
 @opportunity_bp.route('/list', methods=['GET'])
 def list_opportunities():
-    filters = request.args  # يمكنك تمرير فلترة بالـ query string
+    filters = request.args  
     return OpportunityService.list_opportunities(filters)
 
 @opportunity_bp.route('/<int:opportunity_id>', methods=['PUT'])
@@ -38,12 +38,18 @@ def delete_opportunity(opportunity_id):
     current_user_id = get_jwt_identity()
     return OpportunityService.delete_opportunity(current_user_id, opportunity_id)
 
+@opportunity_bp.route('/<int:opportunity_id>/restore', methods=['PUT'])
+@jwt_required()
+def restore_opportunity(opportunity_id):
+    current_user_id = get_jwt_identity()
+    return OpportunityService.restore_opportunity(current_user_id, opportunity_id)
+
+
 @opportunity_bp.route('/organization', methods=['GET'])
 @jwt_required()
 def get_opportunities_by_organization():
     current_user_id = get_jwt_identity()
-    filters = request.args  # أو استخدم request.get_json() لو كانت البيانات JSON
-
+    filters = request.args 
     return OpportunityService.get_opportunities_by_organization(current_user_id, filters)
 
 
@@ -53,12 +59,10 @@ def change_status(opportunity_id):
     current_user_id = get_jwt_identity()
     data = request.get_json()
     
-    # التأكد من وجود "status" في البيانات
     status = data.get('status')
     if not status:
         return {"msg": "Missing 'status' in request data"}, 400
     
-    # استدعاء خدمة تغيير الحالة
     return OpportunityService.change_status(current_user_id, opportunity_id, status)
 
 
