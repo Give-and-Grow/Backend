@@ -82,7 +82,7 @@ git checkout -b newBrnach
 ```bash
 git add .
 git commit -m "Your message"
-
+git commit -m "Your message"
 ```
 
 ### 3-Push to the branch
