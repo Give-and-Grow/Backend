@@ -46,7 +46,9 @@ class Opportunity(db.Model):
         "Skill", secondary="opportunity_skills", backref="opportunities"
     )
     participants = db.relationship(
-        "OpportunityParticipant", back_populates="opportunity"
+        "OpportunityParticipant", 
+        back_populates="opportunity",
+        foreign_keys="OpportunityParticipant.opportunity_id"
     )
 
     volunteer_details = db.relationship(

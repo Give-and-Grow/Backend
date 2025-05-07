@@ -1,5 +1,6 @@
+#Backend/app/schemas/opportunity_participant_schema.py
 from marshmallow import Schema, fields, validate
-from app.schemas.user_schema import UserDetailsShortSchema  # نستخدم نسخة مختصرة
+from app.schemas.user_schema import UserDetailsShortSchema  
 
 
 class RatingInputSchema(Schema):

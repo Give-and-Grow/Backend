@@ -62,6 +62,7 @@ class OpportunityGetSchema(Schema):
     status = fields.Str(validate=lambda x: x in [status.value for status in OpportunityStatus], missing=OpportunityStatus.OPEN.value)
     image_url = fields.Str()
     application_link = fields.Str()
+    is_deleted = fields.Bool()
     contact_email = fields.Email(required=True)
     opportunity_type = fields.Str(required=True, validate=lambda x: x in [o.value for o in OpportunityType])
     volunteer_info = fields.Nested(VolunteerOpportunitySchema, dump_only=True)
