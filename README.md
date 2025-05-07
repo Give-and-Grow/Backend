@@ -7,6 +7,7 @@
 ```bash
 git clone https://github.com/Give-and-Grow/Backend.git
 cd Backend
+cd Backend
 ```
 
 ### 2-Create a Virtual Environment:
