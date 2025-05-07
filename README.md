@@ -34,6 +34,7 @@ source venv/bin/activate
 
 ```bash
 pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 ## Running the Application
@@ -63,6 +64,7 @@ Ctrl+C
 ```bash
 pip freeze > requirements.txt
 ```
+
 ### To update DataBase, activate the virtual environment and run:
 
 ```bash
