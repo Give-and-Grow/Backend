@@ -7,7 +7,6 @@
 ```bash
 git clone https://github.com/Give-and-Grow/Backend.git
 cd Backend
-cd Backend
 ```
 
 ### 2-Create a Virtual Environment:
@@ -33,7 +32,6 @@ source venv/bin/activate
 ### 4-Install Dependencies:
 
 ```bash
-pip install -r requirements.txt
 pip install -r requirements.txt
 ```
 
@@ -84,7 +82,6 @@ git checkout -b newBrnach
 
 ```bash
 git add .
-git commit -m "Your message"
 git commit -m "Your message"
 ```
 
