@@ -89,7 +89,7 @@ def get_own_profile_service(account_id):
         response.update(
             {
                 "name": admin_details.name,
-                "role_level": admin_details.role_level,
+                "role_level": admin_details.role_level.value,
             }
         )
 
