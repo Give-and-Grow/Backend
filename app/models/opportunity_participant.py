@@ -27,7 +27,8 @@ class OpportunityParticipant(db.Model):
         db.Integer, db.ForeignKey("user_details.id"), nullable=False
     )
     joined_at = db.Column(db.DateTime, server_default=func.now())
-    rating = db.Column(db.Integer)  # تقييم من 1 إلى 5
+    org_rating = db.Column(db.Integer)
+    rating = db.Column(db.Integer)  
     completed = db.Column(db.Boolean, default=False)
     points_earned = db.Column(db.Integer, default=0)
     feedback = db.Column(db.Text)
@@ -38,25 +39,50 @@ class OpportunityParticipant(db.Model):
     opportunity = db.relationship('Opportunity', back_populates='participants')
     
     def __repr__(self):
-        # هنا نقوم بإرجاع القيمة النصية فقط لـ attendance_status
         return f"<OpportunityParticipant {self.id}>"
 
-    # نحتاج لتحويل Enum إلى نص بشكل صحيح عند إرسال البيانات
     def to_dict(self):
+        opportunity_data = {
+            "id": self.opportunity.id,
+            "title": self.opportunity.title,
+            "description": self.opportunity.description,
+            "location": self.opportunity.location,
+            "latitude": self.opportunity.latitude,
+            "longitude": self.opportunity.longitude,
+            "opportunity_type": self.opportunity.opportunity_type.value if self.opportunity.opportunity_type else None,
+            "status": self.opportunity.status.value if self.opportunity.status else None,
+            "start_date": self.opportunity.start_date.strftime("%Y-%m-%d") if self.opportunity.start_date else None,
+            "end_date": self.opportunity.end_date.strftime("%Y-%m-%d") if self.opportunity.end_date else None,
+            "created_at": self.opportunity.created_at.strftime("%Y-%m-%dT%H:%M:%S") if self.opportunity.created_at else None,
+            "application_link": self.opportunity.application_link,
+            "contact_email": self.opportunity.contact_email,
+            "image_url": self.opportunity.image_url,
+            "is_deleted": self.opportunity.is_deleted,
+            "organization_id": self.opportunity.organization_id,
+            
+        }
+
         return {
             "id": self.id,
-            "attendance_status": self.attendance_status.value,  # استخدم name فقط لإرجاع النص
+            "opportunity_id": self.opportunity_id,
+            "user_id": self.user_id,
+            "attendance_status": self.attendance_status.value if self.attendance_status else None,
             "completed": self.completed,
-            "joined_at": self.joined_at,
+            "joined_at": self.joined_at.strftime("%Y-%m-%dT%H:%M:%S") if self.joined_at else None,
             "points_earned": self.points_earned,
+            "org_rating": self.org_rating,
             "rating": self.rating,
+            "feedback": self.feedback,
+            "rated_at": self.rated_at.strftime("%Y-%m-%dT%H:%M:%S") if self.rated_at else None,
             "user": {
                 "id": self.user.id,
                 "name": self.user.name,
                 "last_name": self.user.last_name,
                 "profile_picture": self.user.profile_picture,
             },
+            "opportunity": opportunity_data
         }
+
 
 # توزيع النقاط:
 # 40% على الالتزام بالحضور
@@ -72,11 +98,10 @@ attendance_points_map = {
 @event.listens_for(OpportunityParticipant, "before_insert")
 @event.listens_for(OpportunityParticipant, "before_update")
 def calculate_points(mapper, connection, target):
-    # جلب النقاط الأساسية من الفرصة
+    
     volunteer_opportunity = db.session.query(VolunteerOpportunity).filter_by(opportunity_id=target.opportunity_id).first()
-    base_points = volunteer_opportunity.base_points if volunteer_opportunity else 100  # القيمة الافتراضية 100
+    base_points = volunteer_opportunity.base_points if volunteer_opportunity else 100  
 
-    # حساب نقاط الحضور
     status = (
         target.attendance_status.value
         if target.attendance_status
@@ -85,9 +110,8 @@ def calculate_points(mapper, connection, target):
     attendance_percentage = attendance_points_map.get(status, 0)
     attendance_score = (attendance_percentage / 100) * (0.4 * base_points)
 
-    # حساب نقاط التقييم
     rating_score = 0
-    if target.rating is not None:
-        rating_score = (target.rating / 5) * (0.6 * base_points)
+    if target.org_rating is not None:
+        rating_score = (target.org_rating / 5) * (0.6 * base_points)
 
     target.points_earned = int(attendance_score + rating_score)

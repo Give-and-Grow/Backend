@@ -19,7 +19,7 @@ class Report(db.Model):
     )
     reported_type = db.Column(
         db.String(50)
-    )  # 'user', 'organization', 'opportunity'
+    ) 
     reported_id = db.Column(db.Integer, nullable=False)
     reason = db.Column(db.Text)
     status = db.Column(db.Enum(ReportStatus), default=ReportStatus.PENDING)

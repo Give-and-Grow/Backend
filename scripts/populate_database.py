@@ -1,3 +1,4 @@
+#Backend/scripts/populate_database.py
 import os
 from dotenv import load_dotenv
 import random
@@ -8,18 +9,14 @@ from datetime import datetime, timedelta
 import logging
 import uuid
 
-# إعداد logging لتتبع التقدم
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# تحميل متغيرات البيئة من .env
 load_dotenv()
 
-# تهيئة Faker لتوليد بيانات واقعية
 fake = Faker()
 
-# إعدادات الاتصال بقاعدة البيانات
 db_config = {
     'host': os.getenv('MYSQL_DATABASE_HOST', '127.0.0.1'),
     'user': os.getenv('MYSQL_DATABASE_USER', 'your_username'),
@@ -27,7 +24,6 @@ db_config = {
     'database': os.getenv('MYSQL_DATABASE_DB', 'giveandgrow')
 }
 
-# الاتصال بقاعدة البيانات
 try:
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
@@ -36,11 +32,9 @@ except mysql.connector.Error as err:
     logger.error(f"Failed to connect to database: {err}")
     exit(1)
 
-# دالة لتشفير كلمات المرور
 def hash_password(password):
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-# قوائم لتوليد البيانات
 cities = ['Ramallah', 'Nablus', 'Hebron', 'Gaza', 'Jerusalem', 'Jenin', 'Bethlehem', 'Tulkarm']
 skills_list = ['Python', 'JavaScript', 'Project Management', 'Event Planning', 'Web Development', 
                'Data Analysis', 'Graphic Design', 'Teaching', 'Fundraising', 'Marketing']
@@ -54,7 +48,6 @@ period_types = ['MONTH', 'SMONTH', 'YEAR']
 attendance_statuses = ['attended', 'absent', 'late', 'excused']
 industries = ['Education', 'Healthcare', 'Technology', 'Environment', 'Community Development']
 
-# 1. تعبئة جدول skill
 logger.info("Inserting skills...")
 for skill in skills_list:
     try:
@@ -64,7 +57,6 @@ for skill in skills_list:
         logger.warning(f"Error inserting skill {skill}: {err}")
 conn.commit()
 
-# 2. تعبئة جدول tag
 logger.info("Inserting tags...")
 for tag in tags_list:
     try:
@@ -74,7 +66,6 @@ for tag in tags_list:
         logger.warning(f"Error inserting tag {tag}: {err}")
 conn.commit()
 
-# 3. تعبئة جدول account
 num_users = 200
 num_orgs = 10
 num_admins = 5
@@ -105,7 +96,6 @@ for i in range(num_users + num_orgs + num_admins):
 conn.commit()
 logger.info("Finished inserting accounts")
 
-# جلب معرفات الحسابات
 cursor.execute("SELECT id, role FROM account")
 accounts = cursor.fetchall()
 user_accounts = [acc[0] for acc in accounts if acc[1] == 'USER']
@@ -113,12 +103,11 @@ org_accounts = [acc[0] for acc in accounts if acc[1] == 'ORGANIZATION']
 admin_accounts = [acc[0] for acc in accounts if acc[1] == 'ADMIN']
 logger.info(f"Fetched {len(user_accounts)} user accounts, {len(org_accounts)} org accounts, {len(admin_accounts)} admin accounts")
 
-# 4. تعبئة جدول admin_details
 logger.info("Inserting admin_details...")
 cursor.execute("SELECT id FROM account WHERE role = 'ADMIN'")
 admin_accounts = cursor.fetchall()
 for acc in admin_accounts:
-    account_id = acc[0]  # acc هو tuple يحتوي على id فقط
+    account_id = acc[0]  
     name = "Admin"
     role_level = "SUPERADMIN"
     updated_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -132,7 +121,6 @@ for acc in admin_accounts:
 conn.commit()
 logger.info("Finished inserting admin_details")
 
-# 5. تعبئة جدول user_details
 logger.info("Inserting user_details...")
 for user_id in user_accounts:
     name = fake.first_name()
@@ -169,7 +157,6 @@ for user_id in user_accounts:
 conn.commit()
 logger.info("Finished inserting user_details")
 
-# 6. تعبئة جدول organization_details
 logger.info("Inserting organization_details...")
 for org_id in org_accounts:
     name = random.choice(org_names) + str(random.randint(100, 999))
@@ -191,7 +178,6 @@ for org_id in org_accounts:
 conn.commit()
 logger.info("Finished inserting organization_details")
 
-# جلب معرفات user_details و organization_details
 cursor.execute("SELECT id, account_id FROM user_details")
 user_details = cursor.fetchall()
 user_details_ids = [ud[0] for ud in user_details]
@@ -200,7 +186,6 @@ org_details = cursor.fetchall()
 org_details_ids = [od[0] for od in org_details]
 logger.info(f"Fetched {len(user_details_ids)} user_details, {len(org_details_ids)} organization_details")
 
-# 7. تعبئة جدول user_skills
 cursor.execute("SELECT id FROM skill")
 skill_ids = [row[0] for row in cursor.fetchall()]
 logger.info("Inserting user_skills...")
@@ -216,7 +201,6 @@ for user_id in user_details_ids:
 conn.commit()
 logger.info("Finished inserting user_skills")
 
-# 8. تعبئة جدول opportunity
 num_opportunities = 1000
 logger.info(f"Inserting {num_opportunities} opportunities...")
 for i in range(num_opportunities):
@@ -250,14 +234,12 @@ for i in range(num_opportunities):
 conn.commit()
 logger.info("Finished inserting opportunities")
 
-# جلب معرفات الفرص
 cursor.execute("SELECT id, opportunity_type FROM opportunity")
 opportunities = cursor.fetchall()
 volunteer_opp_ids = [opp[0] for opp in opportunities if opp[1] == 'VOLUNTEER']
 job_opp_ids = [opp[0] for opp in opportunities if opp[1] == 'JOB']
 logger.info(f"Fetched {len(volunteer_opp_ids)} volunteer opportunities, {len(job_opp_ids)} job opportunities")
 
-# 9. تعبئة جدول volunteer_opportunity
 logger.info("Inserting volunteer_opportunities...")
 for opp_id in volunteer_opp_ids:
     max_participants = random.randint(10, 100)
@@ -274,7 +256,6 @@ for opp_id in volunteer_opp_ids:
 conn.commit()
 logger.info("Finished inserting volunteer_opportunities")
 
-# 10. تعبئة جدول job_opportunity
 logger.info("Inserting job_opportunities...")
 for opp_id in job_opp_ids:
     required_points = random.randint(100, 1000)
@@ -289,7 +270,6 @@ for opp_id in job_opp_ids:
 conn.commit()
 logger.info("Finished inserting job_opportunities")
 
-# 11. تعبئة جدول opportunity_skills
 logger.info("Inserting opportunity_skills...")
 for opp_id in [opp[0] for opp in opportunities]:
     num_skills = random.randint(1, 4)
@@ -303,7 +283,6 @@ for opp_id in [opp[0] for opp in opportunities]:
 conn.commit()
 logger.info("Finished inserting opportunity_skills")
 
-# 12. تعبئة جدول opportunity_tags
 cursor.execute("SELECT id FROM tag")
 tag_ids = [row[0] for row in cursor.fetchall()]
 logger.info("Inserting opportunity_tags...")
@@ -319,7 +298,6 @@ for opp_id in [opp[0] for opp in opportunities]:
 conn.commit()
 logger.info("Finished inserting opportunity_tags")
 
-# 13. تعبئة جدول user_achievement
 logger.info("Inserting user_achievements...")
 for user_id in user_details_ids:
     num_achievements = random.randint(0, 5)
@@ -340,7 +318,6 @@ for user_id in user_details_ids:
 conn.commit()
 logger.info("Finished inserting user_achievements")
 
-# 14. تعبئة جدول user_points
 logger.info("Inserting user_points...")
 for user_id in user_details_ids:
     num_entries = random.randint(1, 12)
@@ -359,7 +336,6 @@ for user_id in user_details_ids:
 conn.commit()
 logger.info("Finished inserting user_points")
 
-# 15. تعبئة جدول industry
 logger.info("Inserting industries...")
 for industry in industries:
     try:
@@ -369,11 +345,9 @@ for industry in industries:
         logger.warning(f"Error inserting industry {industry}: {err}")
 conn.commit()
 
-# جلب معرفات الصناعات
 cursor.execute("SELECT id FROM industry")
 industry_ids = [row[0] for row in cursor.fetchall()]
 
-# 16. تعبئة جدول organization_industry
 logger.info("Inserting organization_industry relations...")
 for org_id in org_details_ids:
     num_industries = random.randint(1, 3)
@@ -389,7 +363,6 @@ for org_id in org_details_ids:
 conn.commit()
 logger.info("Finished inserting organization_industry relations")
 
-# 17. تعبئة جدول opportunity_participant
 logger.info("Inserting opportunity_participant...")
 attendance_points_map = {
     "attended": 100,
@@ -408,12 +381,10 @@ for _ in range(num_participants):
     attendance_status = random.choice(attendance_statuses)
     rated_at = fake.date_time_this_year() if rating else None
 
-    # جلب النقاط الأساسية من volunteer_opportunity
     cursor.execute("SELECT base_points FROM volunteer_opportunity WHERE opportunity_id = %s", (opportunity_id,))
     result = cursor.fetchone()
     base_points = result[0] if result else 100
 
-    # حساب النقاط بناءً على الحضور والتقييم
     attendance_percentage = attendance_points_map.get(attendance_status, 0)
     attendance_score = (attendance_percentage / 100) * (0.4 * base_points)
     rating_score = (rating / 5) * (0.6 * base_points) if rating else 0
@@ -430,7 +401,6 @@ for _ in range(num_participants):
 conn.commit()
 logger.info("Finished inserting opportunity_participant")
 
-# إغلاق الاتصال
 cursor.close()
 conn.close()
 logger.info("Database populated successfully!")

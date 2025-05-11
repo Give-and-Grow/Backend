@@ -43,7 +43,7 @@ class OpportunityService:
         if rating is None or attendance_status is None:
             return {"msg": "Rating and attendance status are required"}, 400
 
-        participant.rating = rating
+        participant.org_rating = rating
         participant.feedback = feedback
         participant.attendance_status = AttendanceStatus(attendance_status)
         participant.rated_at = datetime.utcnow()
@@ -69,7 +69,7 @@ class OpportunityService:
         attendance_score = (attendance_percentage / 100) * (0.4 * base_points)
 
         rating_score = 0
-        if participant.rating is not None:
+        if participant.org_rating is not None:
             rating_score = (participant.rating / 5) * (0.6 * base_points)
 
         participant.points_earned = int(attendance_score + rating_score)
@@ -86,7 +86,7 @@ class OpportunityService:
 
         participants = OpportunityParticipant.query.filter_by(opportunity_id=opportunity_id).all()
         schema = OpportunityParticipantOutputSchema(many=True)
-        return schema.dump(participants), 200  # رجّع البيانات فقط بدون jsonify
+        return schema.dump(participants), 200  
 
     @staticmethod
     def join_opportunity(account_id, opportunity_id):
@@ -124,7 +124,6 @@ class OpportunityService:
             user_id=user_id
         )
         db.session.add(participant)
-        # زيادة عدد المشاركين الحاليين
         volunteer_opportunity.current_participants += 1
         db.session.commit()
 

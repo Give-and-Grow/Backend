@@ -76,7 +76,6 @@ def replace_organization_industries(industry_ids):
 
     unique_ids = list(set(industry_ids))
 
-    # تحقق من وجود الصناعات
     existing_industries = Industry.query.filter(Industry.id.in_(unique_ids)).all()
     existing_ids = {ind.id for ind in existing_industries}
     invalid_ids = [i for i in unique_ids if i not in existing_ids]
@@ -87,7 +86,6 @@ def replace_organization_industries(industry_ids):
             "invalid_ids": invalid_ids
         }, 400
 
-    # تحديث الصناعات المرتبطة بالمنظمة
     org.industries = existing_industries
     db.session.commit()
 

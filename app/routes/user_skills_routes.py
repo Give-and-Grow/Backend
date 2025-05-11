@@ -123,12 +123,9 @@ def get_available_skills():
     if not user:
         return jsonify({"error": "User not found."}), 404
 
-    # Get all skills
     all_skills = Skill.query.all()
-    # Get skills already associated with the user
     user_skills = set(user.skills)
     
-    # Filter skills not yet added to user's profile
     available_skills = [
         {"id": skill.id, "name": skill.name}
         for skill in all_skills if skill not in user_skills
