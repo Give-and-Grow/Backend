@@ -21,8 +21,8 @@ class OpportunitySchema(Schema):
     created_at = fields.DateTime(dump_only=True)
     skills = fields.Nested(SkillSchema, many=True)
     tags = fields.Nested(TagSchema, many=True)
-    tags = fields.List(fields.Integer())  # tags optional
-    skills = fields.List(fields.Integer(), required=True)  # skills mandatory
+    tags = fields.List(fields.Integer())  
+    skills = fields.List(fields.Integer(), required=True) 
 
     max_participants = fields.Integer(required=False)
     base_points = fields.Integer(required=False, default=100)

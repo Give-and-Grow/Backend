@@ -70,5 +70,5 @@ def change_status(opportunity_id):
 @jwt_required()
 def get_nearby_opportunities():
     current_user_id = get_jwt_identity()
-    max_distance_km = float(request.args.get("max_distance", 50))  
+    max_distance_km = float(request.args.get("max_distance", 20))  
     return OpportunityService.get_nearby_opportunities(current_user_id, max_distance_km)

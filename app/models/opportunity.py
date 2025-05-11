@@ -60,17 +60,26 @@ class Opportunity(db.Model):
 
     def to_dict(self):
         return {
-            "id": self.id,
-            "title": self.title,
+            "application_link": self.application_link,
+            "contact_email": self.contact_email,
+            "created_at": str(self.created_at),
             "description": self.description,
+            "distance": None,
+            "end_date": str(self.end_date),
+            "id": self.id,
+            "image_url": self.image_url,
+            "is_deleted": self.is_deleted,
             "location": self.location,
             "opportunity_type": self.opportunity_type.value,
+            "organization_id": self.organization_id,
+            "start_date": str(self.start_date),
+            "status": self.status.value,
+            "title": self.title,
             "skills": [skill.name for skill in self.skills],
             "tags": [tag.name for tag in self.tags],
-            "start_date": str(self.start_date),
-            "end_date": str(self.end_date),
-            "image_url": self.image_url,
-            "contact_email": self.contact_email,
+            
+            
+
         }
 
     def __repr__(self):

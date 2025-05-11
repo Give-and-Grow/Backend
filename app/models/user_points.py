@@ -8,5 +8,5 @@ class UserPoints(db.Model):
         db.Integer, db.ForeignKey("user_details.id"), nullable=False
     )
     total_points = db.Column(db.Integer, default=0)
-    month = db.Column(db.String(7))  # "2025-04"
+    month = db.Column(db.String(7))  
     year = db.Column(db.Integer)

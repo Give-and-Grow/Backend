@@ -4,7 +4,7 @@ from app.schemas.user_schema import UserDetailsShortSchema
 
 
 class RatingInputSchema(Schema):
-    rating = fields.Integer(required=True, validate=validate.Range(min=1, max=5))
+    org_rating = fields.Integer(required=True, validate=validate.Range(min=1, max=5))
     feedback = fields.String(required=False, allow_none=True)
     attendance_status = fields.String(
         required=True,
@@ -14,7 +14,7 @@ class RatingInputSchema(Schema):
 class OpportunityParticipantOutputSchema(Schema):
     id = fields.Int()
     user = fields.Nested(UserDetailsShortSchema)
-    rating = fields.Int()
+    org_rating = fields.Int()
     completed = fields.Bool()
     points_earned = fields.Int()
     attendance_status = fields.Str()

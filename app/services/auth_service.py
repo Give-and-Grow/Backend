@@ -165,9 +165,8 @@ def create_admin_account_service(current_user_id, data):
     )
     account.set_password(data["password"])
     db.session.add(account)
-    db.session.flush()  # حتى نقدر نستخدم account.id
+    db.session.flush()  
 
-    # إنشاء تفاصيل الأدمن
     admin_details = AdminDetails(
         account_id=account.id,
         name=data["name"],

@@ -42,23 +42,10 @@ class IndustryListSchema(Schema):
         ),
     )
 
-
-# Output schemas
 class IndustryOutputSchema(Schema):
     id = fields.Integer()
     name = fields.String()
 
-
-# class OrganizationProfileSchema(Schema):
-#     id = fields.Integer()
-#     name = fields.String()
-#     description = fields.String()
-#     phone = fields.String()
-#     address = fields.String()
-#     logo = fields.String()
-#     proof_image = fields.String()
-#     verification_status = fields.String()
-#     industries = fields.List(fields.Nested(IndustryOutputSchema))
 
 
 class OrganizationProfileSchema(Schema):
