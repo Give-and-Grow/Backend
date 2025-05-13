@@ -1,3 +1,4 @@
+#Backend/app/services/follow_service.py
 from app.models.follow import  Follow
 from app.models.account import Account, Role
 from app.models.user_details import UserDetails
@@ -39,9 +40,9 @@ def get_following(user_id):
     
     for f in follows:
         followed_account = f.followed_account
-        if followed_account.role == "user":  # إذا كان الحساب من نوع مستخدم
+        if followed_account.role == "user":  
             profile_picture = followed_account.user_details.profile_picture if followed_account.user_details else None
-        elif followed_account.role == "organization":  # إذا كان الحساب من نوع مؤسسة
+        elif followed_account.role == "organization":  
             profile_picture = followed_account.organization_details.logo if followed_account.organization_details else None
         else:
             profile_picture = None
@@ -60,7 +61,7 @@ def get_followers(user_id):
     followers_list = []
 
     for f in followers:
-        follower_account = f.follower_account  # ✅ استخدم الاسم الصحيح
+        follower_account = f.follower_account  
         if follower_account.role == Role.USER:
             profile_picture = follower_account.user_details.profile_picture if follower_account.user_details else None
         elif follower_account.role == Role.ORGANIZATION:

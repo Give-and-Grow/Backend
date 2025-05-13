@@ -40,6 +40,7 @@ def create_app():
     from .routes.recommendation import recommendation_bp
     from .routes.Dashboard.admin_account_routes import admin_account_bp
     from .routes.follow_routes import follow_bp
+    from .routes.post_routes import post_bp
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(profile_bp, url_prefix="/profile")
@@ -56,6 +57,7 @@ def create_app():
     app.register_blueprint(recommendation_bp, url_prefix="/recommendations")
     app.register_blueprint(admin_account_bp,  url_prefix="/admin/accounts")
     app.register_blueprint(follow_bp, url_prefix="/follow")
+    app.register_blueprint(post_bp, url_prefix="/posts")
 
     
     return app
