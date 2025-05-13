@@ -42,11 +42,16 @@ class Account(db.Model):
     admin_details = db.relationship(
         "AdminDetails", backref="account", uselist=False
     )
+
+    followers = db.relationship('Follow', foreign_keys='Follow.followed_id', back_populates='followed_account')
+    following = db.relationship('Follow', foreign_keys='Follow.follower_id', back_populates='follower_account')
+
     
     def set_password(self, password):
         self.password = hashpw(password.encode("utf-8"), gensalt()).decode(
             "utf-8"
         )
+
 
     def __repr__(self):
         return f"<Account {self.username or self.email}>"
