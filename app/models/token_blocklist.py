@@ -1,4 +1,4 @@
-# Backend/app/models/token_blocklist.py
+#Backend/app/models/token_blocklist.py
 from datetime import datetime, timezone
 
 from app.extensions import db

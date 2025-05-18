@@ -9,6 +9,8 @@ from app.extensions import db
 
 opportunity_bp = Blueprint('opportunity_bp', __name__)
 
+
+
 @opportunity_bp.route('/create', methods=['POST'])
 @jwt_required()
 def create_opportunity():
@@ -49,7 +51,7 @@ def restore_opportunity(opportunity_id):
 @jwt_required()
 def get_opportunities_by_organization():
     current_user_id = get_jwt_identity()
-    filters = request.args 
+    filters = request.args
     return OpportunityService.get_opportunities_by_organization(current_user_id, filters)
 
 
@@ -72,3 +74,9 @@ def get_nearby_opportunities():
     current_user_id = get_jwt_identity()
     max_distance_km = float(request.args.get("max_distance", 20))  
     return OpportunityService.get_nearby_opportunities(current_user_id, max_distance_km)
+
+@opportunity_bp.route("/summary/<int:opportunity_id>", methods=["GET"])
+@jwt_required()
+def generate_summary(opportunity_id):
+    summary = OpportunityService.generate_ai_summary(opportunity_id)
+    return {"summary": summary}, 200

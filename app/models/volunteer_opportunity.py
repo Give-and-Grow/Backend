@@ -16,5 +16,10 @@ class VolunteerOpportunity(db.Model):
     base_points = db.Column(db.Integer, default=100)
     current_participants = db.Column(db.Integer, default=0)
 
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
+    days = db.relationship("OpportunityDay", backref="volunteer_opportunity", cascade="all, delete-orphan")
+
+
     def __repr__(self):
-        return f"<VolunteerOpportunity {self.name or self.id}>"
+        return f"<VolunteerOpportunity {self.id}>"

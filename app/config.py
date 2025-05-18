@@ -11,9 +11,10 @@ load_dotenv()
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY")
     SQLALCHEMY_DATABASE_URI = (
-        f"mysql+pymysql://{os.getenv('MYSQL_DATABASE_USER')}:" +
-        f"{os.getenv('MYSQL_DATABASE_PASSWORD')}@" +
-        f"{os.getenv('MYSQL_DATABASE_HOST')}/" +
+        f"mysql+pymysql://{os.getenv('MYSQL_DATABASE_USER')}:"
+        f"{os.getenv('MYSQL_DATABASE_PASSWORD')}@"
+        f"{os.getenv('MYSQL_DATABASE_HOST')}:"
+        f"{os.getenv('MYSQL_DATABASE_PORT')}/"
         f"{os.getenv('MYSQL_DATABASE_DB')}"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -30,6 +31,7 @@ class Config:
     MAIL_USERNAME = os.getenv("MAIL_USERNAME")
     MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
     MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER", "baraa.shellbaya@gmail.com")
+    APYHUB_API_KEY = os.getenv("APYHUB_API_KEY")
 
 
 cred = credentials.Certificate(os.getenv("FIREBASE_CREDENTIAL_PATH"))

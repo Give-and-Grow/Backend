@@ -38,7 +38,7 @@ def get_own_profile_service(account_id):
             return {"msg": "User details not found"}, 404
         response.update(
             {
-                "name": user_details.name,
+                "name": user_details.first_name,
                 "last_name": user_details.last_name,
                 "phone_number": user_details.phone_number,
                 "gender": (
@@ -141,7 +141,7 @@ def update_profile_service(account_id, data):
                     validated_data["longitude"] = coords["longitude"]
 
             for field in [
-                "name",
+                "first_name",
                 "last_name",
                 "phone_number",
                 "gender",

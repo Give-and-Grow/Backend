@@ -54,13 +54,21 @@ def list_organizations():
 
 @public_org_bp.route("/<string:username>", methods=["GET"])
 def get_organization_by_username(username):
-    account = Account.query.filter_by(username=username).first()
-    if not account or not account.organization_details:
-        return jsonify({"msg": "Organization not found"}), 404
+    accounts = Account.query.filter(Account.username.ilike(f"%{username}%")).all()
 
-    org = account.organization_details
+    if not accounts:
+        return jsonify({"msg": "No organizations found"}), 404
+
+    results = []
     schema = OrganizationProfileSchema()
-    return jsonify(schema.dump(org)), 200
+    for account in accounts:
+        if account.organization_details:
+            results.append(schema.dump(account.organization_details))
+
+    if not results:
+        return jsonify({"msg": "No organizations with profiles found"}), 404
+
+    return jsonify(results), 200
 
 
 @public_org_bp.route("/by-name/<string:name>", methods=["GET"])
