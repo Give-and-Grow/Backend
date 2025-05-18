@@ -48,4 +48,4 @@ def recommend_opportunities_for_user(user_id, opportunity_type=None, limit=10):
             recommendations.append((opportunity, score))
 
     recommendations.sort(key=lambda x: x[1], reverse=True)
-    return [op.to_dict() for op, _ in recommendations[:limit]]
+    return [op for op, _ in recommendations[:limit]]

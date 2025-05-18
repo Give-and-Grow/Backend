@@ -2,6 +2,7 @@
 # Built-in imports
 import random
 import string
+from secrets import choice
 from datetime import datetime, timedelta, timezone
 
 from bcrypt import checkpw
@@ -42,25 +43,22 @@ def signup_service(email, password, role, **kwargs):
     except KeyError:
         return {"msg": "Invalid role"}, 400
 
+    if role_enum == Role.ADMIN:
+        return {"msg": "Only admins can create admin accounts"}, 403
+
     if role_enum == Role.USER:
         required_fields = ["name", "last_name", "day", "month", "year"]
-    elif role_enum == Role.ORGANIZATION or role_enum == Role.ADMIN:
+    elif role_enum == Role.ORGANIZATION:
         required_fields = ["name"]
     else:
         return {"msg": "Invalid role"}, 400
 
-    missing_fields = [
-        field for field in required_fields if field not in kwargs
-    ]
+    missing_fields = [field for field in required_fields if field not in kwargs]
     if missing_fields:
-        return {
-            "msg": f"Missing required fields: {', '.join(missing_fields)}"
-        }, 400
+        return {"msg": "Missing required fields", "missing": missing_fields}, 400
 
-    username = kwargs.get("username") or generate_username(
-        kwargs.get("name", email)
-    )
-    verification_code = "".join(random.choices(string.digits, k=6))
+    username = kwargs.get("username") or generate_username(kwargs.get("name", email))
+    verification_code = ''.join(choice(string.digits) for _ in range(6))
     expiry_time = datetime.now(timezone.utc) + timedelta(minutes=10)
 
     account = Account(
@@ -85,7 +83,7 @@ def signup_service(email, password, role, **kwargs):
 
         user_details = UserDetails(
             account_id=account.id,
-            name=kwargs["name"],
+            first_name=kwargs["name"],
             last_name=kwargs["last_name"],
             phone_number=kwargs.get("phone_number"),
             gender=(
@@ -115,9 +113,7 @@ def signup_service(email, password, role, **kwargs):
         "username": username,
     }, 201
 
-
 def create_admin_account_service(current_user_id, data):
-    
     current_account = Account.query.get(current_user_id)
     if not current_account:
         return {"msg": "User not found"}, 404
@@ -152,20 +148,20 @@ def create_admin_account_service(current_user_id, data):
         return {"msg": "Invalid password", "errors": err.messages}, 400
 
     username = data.get("username") or generate_username(data["name"])
-    verification_code = "".join(random.choices(string.digits, k=6))
+    verification_code = ''.join(choice(string.digits) for _ in range(6))
     expiry_time = datetime.now(timezone.utc) + timedelta(minutes=10)
 
     account = Account(
         email=data["email"],
         username=username,
         role=Role.ADMIN,
-        is_email_verified=False,
+        is_email_verified=True,
         verification_code=verification_code,
         verification_code_expiry=expiry_time,
     )
     account.set_password(data["password"])
     db.session.add(account)
-    db.session.flush()  
+    db.session.flush()
 
     admin_details = AdminDetails(
         account_id=account.id,
@@ -175,10 +171,9 @@ def create_admin_account_service(current_user_id, data):
     db.session.add(admin_details)
 
     db.session.commit()
-    send_verification_email(data["email"], verification_code)
 
     return {
-        "msg": "Admin account created successfully. Please check email for verification.",
+        "msg": "Admin account created successfully. The account has been verified by the admin.",
         "username": username,
     }, 201
 
@@ -232,7 +227,10 @@ def verify_service(email, code):
     account.verification_code_expiry = None
     db.session.commit()
 
-    token = create_access_token(identity=str(account.id))
+    token = create_access_token(
+        identity=str(account.id),
+        additional_claims={"role": account.role.value}
+    )
     return {
         "msg": "Email verified",
         "token": token,
@@ -251,7 +249,7 @@ def resend_code_service(email):
     if account.is_email_verified:
         return {"msg": "Email already verified"}, 400
 
-    verification_code = "".join(random.choices(string.digits, k=6))
+    verification_code = ''.join(choice(string.digits) for _ in range(6))
     expiry_time = datetime.now(timezone.utc) + timedelta(minutes=10)
 
     account.verification_code = verification_code
@@ -317,29 +315,3 @@ def logout_service():
         db.session.rollback()
         return {"msg": "An error occurred", "error": str(e)}, 500
 
-
-def get_users_by_year_service(year):
-    users = UserDetails.query.filter(
-        extract("year", UserDetails.date_of_birth) == year
-    ).all()
-
-    result = []
-    for user in users:
-        account = Account.query.get(user.account_id)
-        result.append(
-            {
-                "id": user.id,
-                "name": user.name,
-                "last_name": user.last_name,
-                "email": account.email,
-                "date_of_birth": (
-                    user.date_of_birth.strftime("%Y-%m-%d")
-                    if user.date_of_birth
-                    else None
-                ),
-                "gender": user.gender.value if user.gender else None,
-                "phone_number": user.phone_number,
-            }
-        )
-
-    return result, 200

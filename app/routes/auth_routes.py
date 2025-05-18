@@ -1,20 +1,10 @@
-#Backend/app/routes/auth.py
+#Backend/app/routes/auth_routes.py
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from flask_jwt_extended import get_jwt
 
 
-from ..services.auth_service import (
-    create_admin_account_service,
-    get_users_by_year_service,
-    login_service,
-    logout_service,
-    resend_code_service,
-    reset_password_request_service,
-    reset_password_service,
-    signup_service,
-    verify_service,
-)
+from ..services.auth_service import *
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -50,11 +40,14 @@ def create_admin():
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
-    data = request.get_json()
-    email = data.get("username")
-    password = data.get("password")
-    response, status = login_service(email, password)
-    return jsonify(response), status
+    try:
+        data = request.get_json()
+        email = data.get("username")
+        password = data.get("password")
+        response, status = login_service(email, password)
+        return jsonify(response), status
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @auth_bp.route("/verify", methods=["POST"])
@@ -98,11 +91,6 @@ def logout():
     return jsonify(response), status
 
 
-@auth_bp.route("/users/<int:year>", methods=["GET"])
-@jwt_required()
-def get_users_by_year(year):
-    response, status = get_users_by_year_service(year)
-    return jsonify(response), status
 
 @auth_bp.route('/status', methods=['GET'])
 @jwt_required()

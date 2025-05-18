@@ -6,7 +6,11 @@ from ..models.account import Account, db
 
 
 def generate_username(name, max_attempts=10):
-    base = name.lower().replace(" ", "")
+    """
+    Generates a unique username based on the given name.
+    If all attempts fail, falls back to a 6-digit suffix.
+    """
+    base = ''.join(c for c in name.lower() if c.isalnum())
     for _ in range(max_attempts):
         suffix = random.randint(100, 999)
         username = f"{base}{suffix}"

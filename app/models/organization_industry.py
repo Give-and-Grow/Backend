@@ -1,5 +1,4 @@
 # Backend/app/models/organization_industry.py
-# This code defines a many-to-many relationship between organizations and industries using SQLAlchemy.
 from ..extensions import db
 
 organization_industry = db.Table(

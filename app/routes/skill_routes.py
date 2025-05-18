@@ -157,3 +157,15 @@ def get_skills_for_opportunity(opportunity_id):
         {"id": skill.id, "name": skill.name}
         for skill in skills
     ])
+
+@skill_bp.route('/suggest', methods=['GET'])
+def suggest_skills():
+    query = request.args.get('q', '')
+    if not query:
+        return jsonify({"error": "Query parameter is required."}), 400
+
+    skills = Skill.query.filter(Skill.name.ilike(f"%{query}%")).all()
+    return jsonify([
+        {"id": skill.id, "name": skill.name}
+        for skill in skills
+    ])

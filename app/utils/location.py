@@ -7,6 +7,10 @@ def get_lat_lon_from_location(location_name):
     if location_name.strip().lower() in ["remote", "عن بعد", "remotely", "work from home"]:
         return None
 
+    location_name = location_name.strip()
+    if "palestine" not in location_name.lower():
+        location_name += ", Palestine"
+        
     url = "https://nominatim.openstreetmap.org/search"
     params = {'q': location_name, 'format': 'json'}
     headers = {'User-Agent': 'GivAndGrowGraduationProject/1.0'}

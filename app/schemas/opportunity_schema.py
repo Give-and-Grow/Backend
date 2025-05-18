@@ -1,70 +1,99 @@
-from marshmallow import Schema, fields, validate, EXCLUDE, validates, ValidationError
-from marshmallow.validate import Length
-from app.models.opportunity import OpportunityStatus, OpportunityType
-from app.schemas.skill_schema import SkillSchema
-from app.schemas.tag_schema import TagSchema
-from app.schemas.volunteer_opportunity_schema import VolunteerOpportunitySchema
-from app.schemas.job_opportunity_schema import JobOpportunitySchema
+from marshmallow import Schema, fields, validates_schema, ValidationError, validate
+from app.models.opportunity import OpportunityType, OpportunityStatus
+from app.models.opportunity_day import WeekDay
 
 class OpportunitySchema(Schema):
-    id = fields.Integer(dump_only=True)
-    title = fields.String(required=True, validate=Length(min=3, max=255))
-    description = fields.String(required=True, validate=Length(min=10))
-    location = fields.String(validate=Length(min=3, max=255))
-    start_date = fields.Date(required=True)
-    end_date = fields.Date(required=True)
-    status = fields.String(validate=validate.OneOf(["open", "closed", "filled"]), missing="open")
-    image_url = fields.String(validate=Length(min=3, max=255))
-    application_link = fields.String(validate=Length(min=5, max=255))
-    contact_email = fields.Email(required=True)
-    opportunity_type = fields.String(validate=validate.OneOf(["volunteer", "job"]), required=True)
-    created_at = fields.DateTime(dump_only=True)
-    skills = fields.Nested(SkillSchema, many=True)
-    tags = fields.Nested(TagSchema, many=True)
-    tags = fields.List(fields.Integer())  
-    skills = fields.List(fields.Integer(), required=True) 
-
-    max_participants = fields.Integer(required=False)
-    base_points = fields.Integer(required=False, default=100)
-    required_points = fields.Integer(required=False)
-
-
-    class Meta:
-        unknown = EXCLUDE
-
-    @validates("skills")
-    def validate_skills(self, value):
-        if not value or len(value) == 0:
-            raise ValidationError("At least one skill is required.")
-
-
-class FilterOpportunitySchema(Schema):
-    opportunity_type = fields.String(validate=validate.OneOf(["volunteer", "job"]))
-    status = fields.String(validate=validate.OneOf(["open", "closed", "filled"]))
-    page = fields.Integer(missing=1)
-    per_page = fields.Integer(missing=10)
-
-class OpportunityPaginationSchema(Schema):
-    opportunities = fields.List(fields.Nested(OpportunitySchema))
-    total = fields.Integer()
-    pages = fields.Integer()
-    page = fields.Integer()
-    per_page = fields.Integer()
-
-class OpportunityGetSchema(Schema):
-    id = fields.Int(dump_only=True)
-    organization_id = fields.Int()
-    title = fields.Str(required=True)
+    title = fields.Str(required=True, validate=validate.Length(min=3))
     description = fields.Str()
     location = fields.Str()
     start_date = fields.Date(required=True)
-    end_date = fields.Date()
-    status = fields.Str(validate=lambda x: x in [status.value for status in OpportunityStatus], missing=OpportunityStatus.OPEN.value)
-    image_url = fields.Str()
-    application_link = fields.Str()
-    is_deleted = fields.Bool()
+    end_date = fields.Date(required=True)
+    status = fields.Str(validate=validate.OneOf([s.value for s in OpportunityStatus]), missing="open")
+    image_url = fields.Url()
+    application_link = fields.Url()
     contact_email = fields.Email(required=True)
-    opportunity_type = fields.Str(required=True, validate=lambda x: x in [o.value for o in OpportunityType])
-    volunteer_info = fields.Nested(VolunteerOpportunitySchema, dump_only=True)
-    job_info = fields.Nested(JobOpportunitySchema, dump_only=True)
-    created_at = fields.DateTime(dump_only=True)
+    opportunity_type = fields.Str(required=True, validate=validate.OneOf([t.value for t in OpportunityType]))
+    
+    skills = fields.List(fields.Int(), required=True)
+
+    # Volunteer-only fields
+    max_participants = fields.Int()
+    base_points = fields.Int(missing=100)
+    volunteer_days = fields.List(fields.Str(validate=validate.OneOf([d.value for d in WeekDay])))
+    start_time = fields.Time(format="%H:%M")
+    end_time = fields.Time(format="%H:%M")
+
+    # Job-only field
+    required_points = fields.Int()
+
+    @validates_schema
+    def validate_by_type(self, data, **kwargs):
+        opp_type = data.get("opportunity_type")
+
+        if opp_type == OpportunityType.VOLUNTEER.value:
+            missing_fields = []
+            if "max_participants" not in data:
+                missing_fields.append("max_participants")
+            if "volunteer_days" not in data or not data["volunteer_days"]:
+                missing_fields.append("volunteer_days")
+            if "start_time" not in data:
+                missing_fields.append("start_time")
+            if "end_time" not in data:
+                missing_fields.append("end_time")
+            
+            if missing_fields:
+                raise ValidationError(
+                    {field: ["This field is required for volunteer opportunities."] for field in missing_fields}
+                )
+            
+        elif opp_type == OpportunityType.JOB.value:
+            if "required_points" not in data:
+                raise ValidationError({"required_points": ["This field is required for job opportunities."]})
+
+class OpportunityUpdateSchema(Schema):
+    title = fields.Str(validate=validate.Length(min=3))
+    description = fields.Str()
+    location = fields.Str()
+    start_date = fields.Date()
+    end_date = fields.Date()
+    status = fields.Str(validate=validate.OneOf([s.value for s in OpportunityStatus]))
+    image_url = fields.Url()
+    application_link = fields.Url()
+    contact_email = fields.Email()
+    opportunity_type = fields.Str(validate=validate.OneOf([t.value for t in OpportunityType]))
+
+    skills = fields.List(fields.Int())
+
+    max_participants = fields.Int()
+    base_points = fields.Int()
+    volunteer_days = fields.List(fields.Str(validate=validate.OneOf([d.value for d in WeekDay])))
+    start_time = fields.Time(format="%H:%M")
+    end_time = fields.Time(format="%H:%M")
+
+    required_points = fields.Int()
+
+    @validates_schema
+    def validate_by_type_if_present(self, data, **kwargs):
+        opp_type = data.get("opportunity_type")
+        # ما نتحقق من الحقول الإضافية إلا إذا النوع انبعث (يعني مش null)
+        if opp_type == OpportunityType.VOLUNTEER.value:
+            missing_fields = []
+            if "max_participants" in data and data["max_participants"] is None:
+                missing_fields.append("max_participants")
+            if "volunteer_days" in data and not data["volunteer_days"]:
+                missing_fields.append("volunteer_days")
+            if "start_time" in data and data["start_time"] is None:
+                missing_fields.append("start_time")
+            if "end_time" in data and data["end_time"] is None:
+                missing_fields.append("end_time")
+
+            if missing_fields:
+                raise ValidationError({
+                    field: ["This field is required for volunteer opportunities."] for field in missing_fields
+                })
+
+        elif opp_type == OpportunityType.JOB.value:
+            if "required_points" in data and data["required_points"] is None:
+                raise ValidationError({"required_points": ["This field is required for job opportunities."]})
+
+

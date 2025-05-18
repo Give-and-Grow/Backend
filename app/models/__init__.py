@@ -1,26 +1,23 @@
 #Backend/app/models/__init__.py
-# User related
-from .account import Account, Role
-
-# Admin
-from .admin_details import AdminDetails, AdminRoleLevel
-from .industry import Industry
-
-# Organization
-from .organization_details import OrganizationDetails
-from .organization_industry import organization_industry
-from .skill import Skill
-from .tag import Tag 
-
-#opportunity
-from .opportunity import Opportunity, OpportunityType, OpportunityStatus
-from .opportunity_skills import opportunity_skills
-from .opportunity_tags import opportunity_tags
-from .opportunity_participant import OpportunityParticipant, AttendanceStatus
-
-# Auth
-from .token_blocklist import TokenBlocklist
-from .user_achievement import UserAchievement
-from .user_details import Gender, UserDetails, VerificationStatus
-from .user_points import UserPoints
-from .user_skills import user_skills
+from app.models.token_blocklist import TokenBlocklist
+from app.models.account import Account,Role
+from app.models.admin_details import AdminDetails,AdminRoleLevel
+from app.models.organization_details import OrganizationDetails, VerificationStatus
+from app.models.industry import Industry
+from app.models.organization_industry import organization_industry
+from app.models.opportunity import Opportunity, OpportunityType,OpportunityStatus
+from app.models.opportunity_participant import OpportunityParticipant,ParticipantStatus
+from app.models.opportunity_day import OpportunityDay,WeekDay
+from app.models.volunteer_opportunity import VolunteerOpportunity
+from app.models.job_opportunity import JobOpportunity
+from app.models.skill import Skill
+from app.models.user_details import UserDetails, VerificationStatus, Gender
+from app.models.user_skills import user_skills
+from app.models.user_points import UserPoints, UserPointsSummary, PeriodType
+from app.models.user_achievement import UserAchievement, AchievementType, Level, Ranking
+from app.models.tag import Tag
+from app.models.opportunity_skills import opportunity_skills
+from app.models.participant_attendance import ParticipantAttendance, AttendanceStatus
+from app.models.participant_evaluation import ParticipantEvaluation
+from app.models.follow import Follow
+from app.models.opportunity_rating import OpportunityRating
