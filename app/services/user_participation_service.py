@@ -1,13 +1,12 @@
 from app.models.opportunity_participant import OpportunityParticipant, ParticipantStatus
-from app.models.participant_evaluation import ParticipantEvaluation
+from app.models.opportunity_rating import OpportunityRating
 from app.models.participant_attendance import ParticipantAttendance
 from app.extensions import db
 from app.models.opportunity import Opportunity,OpportunityStatus
 from app.utils.schedule_utils import check_schedule_conflict
 from app.models.user_details import UserDetails
 from app.models.volunteer_opportunity import VolunteerOpportunity
-from datetime import datetime, timedelta
-
+from datetime import datetime, timedelta,date
 
 class UserParticipantService:
     @staticmethod
@@ -90,3 +89,105 @@ class UserParticipantService:
 
         return {"msg": "Application withdrawn successfully"}, 200
 
+
+    @staticmethod
+    def get_user_applications(account_id):
+        user_details = UserDetails.query.filter_by(account_id=account_id).first()
+        if not user_details:
+            return {"msg": "User profile not found"}, 404
+
+        user_id = user_details.id
+        applications = OpportunityParticipant.query.filter_by(user_id=user_id).all()
+        result = []
+
+        for app in applications:
+            opportunity = Opportunity.query.get(app.opportunity_id)
+
+            has_attended = ParticipantAttendance.query.filter_by(
+                participant_id=app.id,
+                status="present"
+            ).first() is not None
+
+            already_evaluated = OpportunityRating.query.filter_by(
+                participant_id=app.id
+            ).first() is not None
+
+            is_ended = opportunity.end_date and opportunity.end_date <= date.today()
+
+            can_evaluate = is_ended and has_attended and not already_evaluated
+
+            result.append({
+                "id": app.id,
+                "user_id": app.user_id,
+                "opportunity_id": app.opportunity_id,
+                "status": app.status.value,
+                "applied_at": app.applied_at.isoformat(),
+                "can_evaluate": can_evaluate,
+                "opportunity": {
+                    "id": opportunity.id,
+                    "title": opportunity.title,
+                    "description": opportunity.description,
+                    "start_date": opportunity.start_date.isoformat() if opportunity.start_date else None,
+                    "end_date": opportunity.end_date.isoformat() if opportunity.end_date else None,
+                    "status": opportunity.status.value,
+                    "location": opportunity.location,
+                },
+                "organization": {
+                    "id": opportunity.organization_id,
+                    "name": opportunity.organization.name,
+                    "logo": opportunity.organization.logo,
+                },
+            })
+
+        return result
+
+
+    @staticmethod
+    def evaluate_participation(account_id, participant_id, rating, feedback):
+        user_details = UserDetails.query.filter_by(account_id=account_id).first()
+        if not user_details:
+            return {"error": "User profile not found."}, 404
+        user_id = user_details.id
+
+        participant = OpportunityParticipant.query.get(participant_id)
+        if not participant or participant.user_id != user_id:
+            return {"error": "Participation not found."}, 404
+
+        opportunity = Opportunity.query.get(participant.opportunity_id)
+        if not opportunity:
+            return {"error": "Opportunity not found."}, 404
+
+        if not opportunity.end_date or opportunity.end_date > date.today():
+            return {"error": "You can only evaluate after the opportunity ends."}, 403
+
+        attendance = ParticipantAttendance.query.filter_by(
+            participant_id=participant_id,
+            status="present"
+        ).first()
+
+        if not attendance:
+            return {"error": "You must have attended to evaluate this opportunity."}, 403
+
+        existing = OpportunityRating.query.filter_by(participant_id=participant_id).first()
+        if existing:
+            return {"error": "You have already evaluated this opportunity."}, 400
+
+        if not (1 <= rating <= 5):
+            return {"error": "Rating must be between 1 and 5."}, 400
+
+        evaluation = OpportunityRating(
+            participant_id=participant_id,
+            rating=rating,
+            comment=feedback
+        )
+        db.session.add(evaluation)
+        db.session.commit()
+
+        return {
+            "message": "Evaluation submitted successfully.",
+            "evaluation": {
+                "participant_id": evaluation.participant_id,
+                "rating": evaluation.rating,
+                "comment": evaluation.comment
+            }
+        }
