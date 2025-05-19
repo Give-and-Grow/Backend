@@ -38,6 +38,7 @@ def create_app():
     from .routes.public_organization_routes import public_org_bp
     from .routes.organization_routes import organization_bp
     from .routes.recommendation_routes import recommendation_bp
+    from app.routes.user_participation_routes import user_participation_bp
     
 
 
@@ -54,5 +55,6 @@ def create_app():
     app.register_blueprint(public_org_bp, url_prefix="/public/organizations")
     app.register_blueprint(organization_bp, url_prefix="/organization")
     app.register_blueprint(recommendation_bp, url_prefix="/recommendations")
+    app.register_blueprint(user_participation_bp, url_prefix="/user-participation")
     
     return app
