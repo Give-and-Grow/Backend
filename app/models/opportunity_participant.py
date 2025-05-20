@@ -22,6 +22,7 @@ class OpportunityParticipant(db.Model):
         db.UniqueConstraint("opportunity_id", "user_id", name="uq_opportunity_user"),
     )
     opportunity = db.relationship("Opportunity", back_populates="participants")
+    user = db.relationship("UserDetails", back_populates="opportunities")
     attendance_records = db.relationship("ParticipantAttendance", back_populates="participant", cascade="all, delete-orphan")
     evaluations = db.relationship("ParticipantEvaluation", back_populates="participant", cascade="all, delete-orphan")
 

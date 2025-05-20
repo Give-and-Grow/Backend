@@ -39,7 +39,7 @@ def create_app():
     from .routes.organization_routes import organization_bp
     from .routes.recommendation_routes import recommendation_bp
     from app.routes.user_participation_routes import user_participation_bp
-    
+    from app.routes.attendance_routes import attendance_bp
 
 
     app.register_blueprint(auth_bp, url_prefix="/auth")   
@@ -56,5 +56,6 @@ def create_app():
     app.register_blueprint(organization_bp, url_prefix="/organization")
     app.register_blueprint(recommendation_bp, url_prefix="/recommendations")
     app.register_blueprint(user_participation_bp, url_prefix="/user-participation")
+    app.register_blueprint(attendance_bp)
     
     return app
