@@ -32,7 +32,7 @@ def get_user_posts(user_id):
     account = Account.query.filter_by(id=user_id).first()
     if not account:
         return {"error": "User not found"}, 404
-    if account.role == "organization":
+    if account.role.value == "organization":
         org_details = OrganizationDetails.query.filter_by(account_id=user_id).first()
         if not org_details:
             return {"error": "Organization details not found"}, 404
@@ -124,7 +124,7 @@ def get_comments(post_id, user_id):
         commenter_id = data.get("user_id")
         account = Account.query.get(commenter_id)
         if account:
-            if account.role == "organization":
+            if account.role.value == "organization":
                 org = OrganizationDetails.query.filter_by(account_id=commenter_id).first()
                 if org:
                     owner_info = {
@@ -209,7 +209,7 @@ def get_following_posts(user_id):
             if not account:
                 continue
 
-            if account.role == "organization":
+            if account.role.value == "organization":
                 org = OrganizationDetails.query.filter_by(account_id=uid).first()
                 if org:
                     owner_info = {
@@ -258,7 +258,7 @@ def get_post_by_id(post_id, current_user_id=None):
     if not account:
         data["owner_info"] = None
     else:
-        if account.role == "organization":
+        if account.role.value == "organization":
             org = OrganizationDetails.query.filter_by(account_id=uid).first()
             if org:
                 owner_info = {

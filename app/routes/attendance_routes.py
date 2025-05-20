@@ -11,7 +11,7 @@ from app.models.opportunity_participant import OpportunityParticipant
 
 
 
-attendance_bp = Blueprint("attendance", __name__, url_prefix="/attendance")
+attendance_bp = Blueprint("attendance", __name__)
 
 
 @attendance_bp.route("/<int:opportunity_id>/dates", methods=["GET"])
