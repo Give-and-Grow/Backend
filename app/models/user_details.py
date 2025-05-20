@@ -67,10 +67,11 @@ class UserDetails(db.Model):
         backref=db.backref("users", lazy="dynamic"),
     )
     achievements = db.relationship("UserAchievement", backref="user", lazy=True)
-    opportunities = db.relationship("OpportunityParticipant", backref="user", lazy=True)
+    opportunities = db.relationship("OpportunityParticipant", back_populates="user", lazy=True)
     points = db.relationship("UserPoints", back_populates="user", cascade="all, delete-orphan")
     points_summaries = db.relationship("UserPointsSummary", back_populates="user", cascade="all, delete-orphan")
-
+    
+    
 
     def __repr__(self):
         return f"<UserDetails {self.first_name} {self.last_name}>"
