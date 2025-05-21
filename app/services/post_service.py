@@ -192,7 +192,6 @@ def edit_comment(post_id, comment_id, user_id, new_content):
 
 def get_following_posts(user_id):
     following = get_following(user_id)  
-    print("Following list:", get_following(user_id))
     following_ids = [f['id'] for f in following]
 
     posts_ref = db_firestore.collection('posts')

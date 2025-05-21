@@ -123,6 +123,7 @@ class UserParticipantService:
                 "status": app.status.value,
                 "applied_at": app.applied_at.isoformat(),
                 "can_evaluate": can_evaluate,
+                "certificate": is_ended and has_attended,
                 "opportunity": {
                     "id": opportunity.id,
                     "title": opportunity.title,

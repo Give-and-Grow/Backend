@@ -26,5 +26,4 @@ def get_lat_lon_from_location(location_name):
         else:
             return None
     except requests.RequestException as e:
-        print(f"Error fetching location data: {e}")
         return None
