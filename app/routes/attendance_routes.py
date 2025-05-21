@@ -136,8 +136,6 @@ def post_attendance(opportunity_id):
                     status=AttendanceStatus(status)
                 )
                 db.session.add(new_attendance)
-                print(new_attendance.status)
-                print(new_attendance.participant_id)
         
         # Commit all changes
         db.session.commit()

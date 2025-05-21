@@ -19,5 +19,4 @@ def recommend():
 
         return jsonify(opportunities), 200
     except Exception as e:
-        print(f"Error: {str(e)}")
         return {"msg": "Internal server error"}, 500
