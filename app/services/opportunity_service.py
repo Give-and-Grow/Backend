@@ -546,7 +546,7 @@ class OpportunityService:
                 "https://api.apyhub.com/ai/summarize-text",
                 headers={
                     "Content-Type": "application/json",
-                    "apy-token": os.getenv("APYHUB_API_KEY")  # خليه بالـ .env
+                    "apy-token": os.getenv("APYHUB_API_KEY")  
                 },
                 json={"text": full_text}
             )

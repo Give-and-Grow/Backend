@@ -75,6 +75,6 @@ def posts_from_following():
 @account_required
 def get_single_post(post_id):
     result = get_post_by_id(post_id, current_user_id=g.user_id)
-    if isinstance(result, tuple):  # في حال رجع (dict, status_code)
+    if isinstance(result, tuple):  
         return jsonify(result[0]), result[1]
     return jsonify(result), 200
