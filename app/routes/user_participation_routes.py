@@ -26,7 +26,7 @@ def get_user_applications():
 
     applications = UserParticipantService.get_user_applications(user_id)
 
-    if isinstance(applications, tuple):  # Error returned from service
+    if isinstance(applications, tuple):  
         response, status_code = applications
         return jsonify(response), status_code
 

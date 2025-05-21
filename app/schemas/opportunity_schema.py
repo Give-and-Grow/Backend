@@ -75,7 +75,7 @@ class OpportunityUpdateSchema(Schema):
     @validates_schema
     def validate_by_type_if_present(self, data, **kwargs):
         opp_type = data.get("opportunity_type")
-        # ما نتحقق من الحقول الإضافية إلا إذا النوع انبعث (يعني مش null)
+    
         if opp_type == OpportunityType.VOLUNTEER.value:
             missing_fields = []
             if "max_participants" in data and data["max_participants"] is None:
