@@ -137,7 +137,7 @@ class OpportunityService:
             "application_link": opportunity.application_link,
             "contact_email": opportunity.contact_email,
             "opportunity_type": opportunity.opportunity_type.value,
-            "skills": [skill.id for skill in opportunity.skills],
+            "skills": [{"id": skill.id, "name": skill.name} for skill in opportunity.skills],
         }
 
         if opportunity.opportunity_type == OpportunityType.VOLUNTEER:
@@ -273,7 +273,7 @@ class OpportunityService:
                 "organization_id": opp.organization_id,
                 "organization_name": opp.organization.name if opp.organization else None,
                 "organization_image": opp.organization.logo if opp.organization else None,
-                "skills": [s.id for s in opp.skills],
+                "skills": [{"id": s.id, "name": s.name} for s in opp.skills],
             }
 
             if opp.opportunity_type == OpportunityType.VOLUNTEER and opp.volunteer_details:
@@ -499,7 +499,7 @@ class OpportunityService:
             "organization_id": opp.organization_id,
             "organization_name": opp.organization.name if opp.organization else None,
             "organization_image": opp.organization.logo if opp.organization else None,
-            "skills": [s.id for s in opp.skills],
+            "skills": [{"id": s.id, "name": s.name} for s in opp.skills],
         }
 
         if opp.opportunity_type == OpportunityType.VOLUNTEER and opp.volunteer_details:
@@ -509,7 +509,8 @@ class OpportunityService:
 
         return data
 
-    @staticmethod
+
+        @staticmethod
     def generate_ai_summary(opportunity_id):
         from app.models.opportunity import Opportunity
         from sqlalchemy.orm import joinedload

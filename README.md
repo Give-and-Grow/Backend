@@ -31,9 +31,16 @@ source venv/bin/activate
 
 ### 4-Install Dependencies:
 
+### Install [Ollama](https://ollama.com/download)
+### Run the following to download the model:
+```bash
+ollama run mistral
+```
+
 ```bash
 pip install -r requirements.txt
 ```
+
 
 ## Running the Application
 
