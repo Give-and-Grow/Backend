@@ -56,7 +56,7 @@ def get_own_profile_service(account_id):
                 "bio": user_details.bio,
                 "profile_picture": user_details.profile_picture,
                 "experience": user_details.experience,
-                "skills": [skill.name for skill in user_details.skills],
+                "skills": [{"id": skill.id, "name": skill.name} for skill in user_details.skills],
                 "identity_verification_status": (
                     user_details.identity_verification_status.value
                     if user_details.identity_verification_status
