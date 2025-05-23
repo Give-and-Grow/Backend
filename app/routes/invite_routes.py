@@ -1,9 +1,9 @@
 from flask import Blueprint, jsonify
 from app.services.recommend_cf import recommend_users_for_org
 
-recommendation_bp = Blueprint("recommendation", __name__)
+invite_recommendation_bp = Blueprint("recommendation", __name__)
 
-@recommendation_bp.route("/opportunity/<int:opportunity_id>/invite", methods=["POST"])
+@invite_recommendation_bp.route("/opportunity/<int:opportunity_id>/invite", methods=["POST"])
 def invite_top_users(opportunity_id):
     from app.services.recommend_cf import recommend_users_for_org
     from app.services.invite import invite_recommended_users

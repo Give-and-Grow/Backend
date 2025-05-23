@@ -43,6 +43,7 @@ def create_app():
     from app.routes.organization_participant_routes import op_participant_bp
     from app.routes.evaluation_routes import evaluation_bp
     from app.routes.certificates_routes import certificate_bp
+    from app.routes.invite_routes import invite_recommendation_bp
     
     app.register_blueprint(auth_bp, url_prefix="/auth")   
     app.register_blueprint(opportunity_bp, url_prefix="/opportunities") 
@@ -62,5 +63,7 @@ def create_app():
     app.register_blueprint(op_participant_bp, url_prefix="/org/opportunities")
     app.register_blueprint(evaluation_bp, url_prefix="/evaluation")
     app.register_blueprint(certificate_bp, url_prefix="/certificates")
+    app.register_blueprint(invite_recommendation_bp, url_prefix="/invite")
+
     
     return app
