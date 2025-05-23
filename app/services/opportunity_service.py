@@ -510,7 +510,7 @@ class OpportunityService:
         return data
 
 
-        @staticmethod
+    @staticmethod
     def generate_ai_summary(opportunity_id):
         from app.models.opportunity import Opportunity
         from sqlalchemy.orm import joinedload
