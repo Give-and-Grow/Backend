@@ -11,6 +11,9 @@ from app.models.opportunity_participant import OpportunityParticipant, Participa
 from app.utils.calculate_points import calculate_participant_points
 from decimal import Decimal
 from io import BytesIO
+from app.utils.email import send_insufficient_hours_email, send_certificate_email
+from app.utils.calculate_hours import calculate_volunteer_hours 
+from app.models.account import Account
 
 certificate_bp = Blueprint("certificate", __name__)
 
@@ -55,7 +58,7 @@ def download_certificate(opportunity_id):
     claims = get_jwt()
     if claims["role"] != "user":
         return {"msg": "You are not authorized to access this route"}, 403
-
+    current_account =Account.query.filter_by(id=current_user_id).first()
     user = UserDetails.query.filter_by(account_id=current_user_id).first()
     if not user:
         return {"msg": "User not found"}, 404
@@ -79,10 +82,23 @@ def download_certificate(opportunity_id):
     from_date = opportunity.start_date.strftime("%Y-%m-%d")
     to_date = opportunity.end_date.strftime("%Y-%m-%d")
     hours = round(result["attended_hours"], 1)
-    points = int(calculate_participant_points(participant.id, db.session) * Decimal(str(hours)))
+    required_hours = result["total_hours"]
     opportunity_title = opportunity.title
 
-    # توليد الشهادة كـ BytesIO
+    # التحقق من الحضور الكافي
+    if hours < required_hours * 0.7:
+        send_insufficient_hours_email(
+            user_email=current_account.email,
+            user_name=user_name,
+            opportunity_title=opportunity_title,
+            attended_hours=hours,
+            required_hours=round(required_hours, 1)
+        )
+        return {"msg": "User did not meet attendance requirements. Rejection email sent."}, 200
+
+    # احسب النقاط وولّد الشهادة
+    points = int(calculate_participant_points(participant.id, db.session) * Decimal(str(hours)))
+
     pdf_bytes = generate_certificate(
         user_name=user_name,
         from_date=from_date,
@@ -94,6 +110,17 @@ def download_certificate(opportunity_id):
 
     cert_filename = f"{user_name.replace(' ', '_')}_{opportunity_id}.pdf"
 
+    pdf_bytes.seek(0)  # مهم جداً قبل القراءة
+    send_certificate_email(
+        user_email=current_account.email,
+        user_name=user_name,
+        opportunity_title=opportunity_title,
+        pdf_bytes=pdf_bytes,
+        filename=cert_filename
+    )
+
+    # رجّع الشهادة كملف
+    pdf_bytes.seek(0)  # تأكد إننا في بداية الملف عند الإرسال
     return send_file(
         pdf_bytes,
         as_attachment=True,
