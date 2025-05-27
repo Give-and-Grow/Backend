@@ -5,6 +5,11 @@ from app.models.opportunity_participant import OpportunityParticipant, Participa
 from app.models.opportunity import Opportunity
 from app.extensions import db
 from datetime import datetime
+from decimal import Decimal
+from app.utils.calculate_hours import calculate_volunteer_hours
+from app.utils.calculate_points import calculate_participant_points
+from app.models.user_points import UserPoints
+
 
 evaluation_bp = Blueprint("evaluation", __name__)
 
@@ -61,6 +66,11 @@ def post_evaluations(opportunity_id):
 
         required_fields = ["participant_id", "date", "score"]
 
+        # تحقق من وجود الفرصة
+        opportunity = Opportunity.query.filter_by(id=opportunity_id, is_deleted=False).first()
+        if not opportunity:
+            return jsonify({"error": "Opportunity not found"}), 404
+
         for record in data:
             if not all(field in record for field in required_fields):
                 return jsonify({"error": f"Missing fields in record: {record}"}), 400
@@ -100,8 +110,61 @@ def post_evaluations(opportunity_id):
                 )
                 db.session.add(new_eval)
 
+        db.session.commit()  # أولاً نحفظ التقييمات
+
+        # ثم نحسب النقاط لكل مشارك
+        for record in data:
+            participant_id = record["participant_id"]
+            participant = OpportunityParticipant.query.get(participant_id)
+            if not participant or not participant.user:
+                continue
+
+            user = participant.user
+            # احسب مجموع النقاط
+            total_points = db.session.query(
+                db.func.coalesce(db.func.sum(UserPoints.points_earned), 0)
+            ).filter_by(user_id=user.id).scalar()
+
+            user.total_points = total_points
+
+            # احسب الترتيب (rank)
+            if total_points >= 100000:
+                user.rank = "Platinum"
+            elif total_points >= 10000:
+                user.rank = "Gold"
+            elif total_points >= 5000:
+                user.rank = "Silver"
+            else:
+                user.rank = "Bronze"
+            # احسب عدد الساعات اللي حضرها المستخدم
+            hours_result = calculate_volunteer_hours(opportunity, user.id, db.session)
+            attended_hours = round(hours_result.get("attended_hours", 0), 1)
+
+            # احسب مجموع التقييمات للمشارك
+            total_score = calculate_participant_points(participant_id, db.session)
+
+            # احسب النقاط النهائية
+            points = int(total_score * Decimal(str(attended_hours)))
+
+            # حفظ النقاط في جدول user_points
+            user_points = UserPoints.query.filter_by(
+                user_id=user.id,
+                opportunity_id=opportunity_id
+            ).first()
+
+            if user_points:
+                user_points.points_earned = points
+            else:
+                user_points = UserPoints(
+                    user_id=user.id,
+                    opportunity_id=opportunity_id,
+                    points_earned=points
+                )
+                db.session.add(user_points)
+
         db.session.commit()
-        return jsonify({"message": "Evaluations processed successfully", "count": len(data)}), 200
+
+        return jsonify({"message": "Evaluations and points processed successfully", "count": len(data)}), 200
 
     except Exception as e:
         db.session.rollback()

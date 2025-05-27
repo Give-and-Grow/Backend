@@ -46,6 +46,7 @@ def create_app():
     from app.routes.invite_routes import invite_recommendation_bp
     from app.routes.notification_route import notification_bp
     from app.routes.notification_route import user_bp
+    from app.routes.user_routes import user_routes
     
     app.register_blueprint(auth_bp, url_prefix="/auth")   
     app.register_blueprint(opportunity_bp, url_prefix="/opportunities") 
@@ -68,6 +69,7 @@ def create_app():
     app.register_blueprint(invite_recommendation_bp, url_prefix="/invite")
     app.register_blueprint(notification_bp, url_prefix="/notifications")
     app.register_blueprint(user_bp, url_prefix="/user")
+    app.register_blueprint(user_routes, url_prefix="/user-routes")
 
     
     return app
