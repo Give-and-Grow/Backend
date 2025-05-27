@@ -12,7 +12,7 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    cors = CORS(app)
+    CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
 
     db.init_app(app)
     jwt.init_app(app)
@@ -44,6 +44,8 @@ def create_app():
     from app.routes.evaluation_routes import evaluation_bp
     from app.routes.certificates_routes import certificate_bp
     from app.routes.invite_routes import invite_recommendation_bp
+    from app.routes.notification_route import notification_bp
+    from app.routes.notification_route import user_bp
     
     app.register_blueprint(auth_bp, url_prefix="/auth")   
     app.register_blueprint(opportunity_bp, url_prefix="/opportunities") 
@@ -64,6 +66,8 @@ def create_app():
     app.register_blueprint(evaluation_bp, url_prefix="/evaluation")
     app.register_blueprint(certificate_bp, url_prefix="/certificates")
     app.register_blueprint(invite_recommendation_bp, url_prefix="/invite")
+    app.register_blueprint(notification_bp, url_prefix="/notifications")
+    app.register_blueprint(user_bp, url_prefix="/user")
 
     
     return app

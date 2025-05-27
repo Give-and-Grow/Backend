@@ -36,6 +36,7 @@ class Account(db.Model):
     last_login = db.Column(db.DateTime(timezone=True), nullable=True)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
+    fcm_token = db.Column(db.String(512), nullable=True)
 
     # 🔗 Relationships
     organization_details = db.relationship("OrganizationDetails", backref="account", uselist=False)
