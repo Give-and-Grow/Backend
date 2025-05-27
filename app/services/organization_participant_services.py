@@ -3,6 +3,7 @@ from app.models import  Opportunity, OpportunityParticipant, ParticipantStatus, 
 from datetime import datetime
 from app.models.organization_details import OrganizationDetails
 from app.extensions import db
+from app.services.notification_service import notify_user
 
 def get_opportunity_participants(opportunity_id, org_id):
     organization = OrganizationDetails.query.filter_by(account_id=org_id).first()
@@ -78,6 +79,36 @@ def change_participant_status(opportunity_id, user_id, org_id, new_status):
         db.session.commit()
     except ValueError:
         return jsonify({"error": "Invalid status value"}), 400
+
+    
+    status_titles = {
+        "accepted": "You have been accepted!",
+        "rejected": "Your application was rejected",
+        "pending": "Your application is under review",
+        "cancelled": "Your participation has been cancelled"
+      
+    }
+
+    status_bodies = {
+        "accepted": f"You have been accepted for the opportunity '{opportunity.title}' by {organization.name}.",
+        "rejected": f"Unfortunately, you were not selected for the opportunity '{opportunity.title}'.",
+        "pending": f"Your request to join the opportunity '{opportunity.title}' is under review.",
+        "cancelled": f"Your participation in the opportunity '{opportunity.title}' has been cancelled."
+       
+    }
+
+    if new_status in status_titles:
+        notify_user(
+            user_id=user_id,
+            title=status_titles[new_status],
+            body=status_bodies[new_status],
+            data={
+                "type": "opportunity_status",
+                "opportunity_id": opportunity.id,
+                "status": new_status,
+                "from": org_id  
+            }
+        )
 
     return jsonify({"message": "Participant status updated successfully"}), 200
 
