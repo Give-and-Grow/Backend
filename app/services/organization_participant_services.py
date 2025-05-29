@@ -1,11 +1,11 @@
-from flask import jsonify
+from flask import jsonify, request
 from app.models import  Opportunity, OpportunityParticipant, ParticipantStatus, ParticipantAttendance, ParticipantEvaluation
 from datetime import datetime
 from app.models.organization_details import OrganizationDetails
 from app.extensions import db
 from app.services.notification_service import notify_user
 from app.services.chat_service import add_user_to_chat_if_exists
-from app.models.opportunity_participant import OpportunityParticipant
+from app.models.opportunity_participant import OpportunityParticipant,ParticipantStatus
 
 
 def get_opportunity_participants(opportunity_id, org_id):
@@ -129,9 +129,18 @@ def fetch_all_applications_for_organization(org_account_id):
     if not opportunity_ids:
         return jsonify([]), 200
 
-    participants = OpportunityParticipant.query.filter(
-        OpportunityParticipant.opportunity_id.in_(opportunity_ids)
-    ).all()
+    status_filter = request.args.get("status")
+    
+    query = OpportunityParticipant.query.filter(OpportunityParticipant.opportunity_id.in_(opportunity_ids))
+
+    if status_filter:
+        try:
+            status_enum = ParticipantStatus(status_filter.lower())
+            query = query.filter(OpportunityParticipant.status == status_enum)
+        except ValueError:
+            return jsonify({"error": f"Invalid status '{status_filter}'"}), 400
+
+    participants = query.all()
 
     result = [{
         "opportunity_id": p.opportunity_id,
