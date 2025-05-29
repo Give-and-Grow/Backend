@@ -160,7 +160,9 @@ class OpportunityService:
 
     @staticmethod
     def list_opportunities(filters):
-        query = Opportunity.query.filter_by(is_deleted=False)
+        is_deleted_str = filters.get("is_deleted", "false").lower()
+        is_deleted = is_deleted_str == "true"
+        query = Opportunity.query.filter_by(is_deleted=is_deleted)
 
         # --- فلترة حسب الحالة ---
         status = filters.get("status")
@@ -514,7 +516,6 @@ class OpportunityService:
     def generate_ai_summary(opportunity_id):
         from app.models.opportunity import Opportunity
         from sqlalchemy.orm import joinedload
-        from app.extensions import db
 
         opportunity = Opportunity.query.options(
             joinedload(Opportunity.skills),
@@ -542,17 +543,18 @@ class OpportunityService:
         Organization: {organization_name}
         """
 
+        prompt = f"Summarize the following opportunity in no more than 2 sentences. Return only the summary without any introduction:\n\n{full_text}"
+
         try:
             response = requests.post(
-                "https://api.apyhub.com/ai/summarize-text",
-                headers={
-                    "Content-Type": "application/json",
-                    "apy-token": os.getenv("APYHUB_API_KEY")  
-                },
-                json={"text": full_text}
+                "http://localhost:11434/api/generate",
+                json={
+                    "model": "llama3.2:1b",
+                    "prompt": prompt,
+                    "stream": False
+                }
             )
             response.raise_for_status()
-            summary = response.json().get("data", "")
-            return summary
+            return response.json().get("response", "").strip()
         except Exception as e:
             return f"Error generating summary: {str(e)}"

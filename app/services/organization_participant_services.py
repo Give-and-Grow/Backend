@@ -4,6 +4,9 @@ from datetime import datetime
 from app.models.organization_details import OrganizationDetails
 from app.extensions import db
 from app.services.notification_service import notify_user
+from app.services.chat_service import add_user_to_chat_if_exists
+from app.models.opportunity_participant import OpportunityParticipant
+
 
 def get_opportunity_participants(opportunity_id, org_id):
     organization = OrganizationDetails.query.filter_by(account_id=org_id).first()
@@ -109,6 +112,9 @@ def change_participant_status(opportunity_id, user_id, org_id, new_status):
                 "from": org_id  
             }
         )
+        
+    if new_status == ParticipantStatus.ACCEPTED:
+        add_user_to_chat_if_exists(opportunity_id, user_id)
 
     return jsonify({"message": "Participant status updated successfully"}), 200
 
