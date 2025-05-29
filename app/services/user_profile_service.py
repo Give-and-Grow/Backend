@@ -23,6 +23,7 @@ def get_own_profile_service(account_id):
         return {"msg": "Account not found"}, 404
 
     response = {
+        "account_id": account.id,
         "email": account.email,
         "username": account.username,
         "role": account.role.value,
@@ -39,6 +40,7 @@ def get_own_profile_service(account_id):
         response.update(
             {
                 "name": user_details.first_name,
+                "full_name": f"{user_details.first_name} {user_details.last_name}",
                 "last_name": user_details.last_name,
                 "phone_number": user_details.phone_number,
                 "gender": (

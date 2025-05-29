@@ -21,3 +21,4 @@ from app.models.participant_attendance import ParticipantAttendance, AttendanceS
 from app.models.participant_evaluation import ParticipantEvaluation
 from app.models.follow import Follow
 from app.models.opportunity_rating import OpportunityRating
+from app.models.opportunity_chat import OpportunityChat
