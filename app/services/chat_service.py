@@ -294,6 +294,7 @@ def get_user_chats(account_id):
             chat_data["chat_id"] = chat_doc_id
             chat_data["opportunity_id"] = opp_id
             chat_data["opportunity_title"] = Opportunity.query.get(opp_id).title
+            chat_data["is_locked"] = chat_data.get("is_locked", False)
             chat_list.append(chat_data)
 
     return chat_list
