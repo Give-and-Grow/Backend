@@ -240,3 +240,31 @@ def change_password_service(account_id, data):
     except Exception as e:
         db.session.rollback()
         return {"message": "An error occurred", "error": str(e)}, 500
+
+import pytesseract
+from PIL import Image
+import requests
+from io import BytesIO
+from ..models.user_details import UserDetails
+from ..extensions import db
+
+def verify_identity_with_ocr_service(account_id, image_url):
+    response = requests.get(image_url)
+    img = Image.open(BytesIO(response.content))
+
+    extracted_text = pytesseract.image_to_string(img, lang='ara+eng').lower()
+
+    user = UserDetails.query.filter_by(account_id=account_id).first()
+    if not user:
+        return {"message": "User not found"}, 404
+
+    full_name = f"{user.first_name} {user.last_name}".lower()
+
+    if full_name in extracted_text:
+        user.identity_verification_status = "approved"
+        db.session.commit()
+        return {"message": "Identity verified successfully"}, 200
+    else:
+        user.identity_verification_status = "rejected"
+        db.session.commit()
+        return {"message": "Identity verification failed"}, 400
