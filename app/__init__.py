@@ -48,7 +48,12 @@ def create_app():
     from app.routes.notification_route import user_bp
     from app.routes.user_routes import user_routes
     from app.routes.chat_routes import chat_bp
-    
+    from app.routes.ADMIN.admin_account_routes import admin_account_bp
+    from app.routes.ADMIN.user_org_admin_routes import admin_user_bp, admin_org_bp, admin_admin_bp
+    from app.routes.ADMIN.admin_skills_industry_routes import skills_admin_bp, industry_admin_bp
+    from app.routes.ADMIN.admin_opportunity_stats_routes import opportunity_stats_bp
+
+
     app.register_blueprint(auth_bp, url_prefix="/auth")   
     app.register_blueprint(opportunity_bp, url_prefix="/opportunities") 
     app.register_blueprint(dropdown_bp, url_prefix="/dropdown")
@@ -72,6 +77,13 @@ def create_app():
     app.register_blueprint(user_bp, url_prefix="/user")
     app.register_blueprint(user_routes, url_prefix="/user-routes")
     app.register_blueprint(chat_bp, url_prefix="/chat")
+    app.register_blueprint(admin_account_bp, url_prefix="/admin/accounts")
+    app.register_blueprint(admin_user_bp, url_prefix="/admin/users")
+    app.register_blueprint(admin_org_bp, url_prefix="/admin/organizations")
+    app.register_blueprint(admin_admin_bp, url_prefix="/admin/admins")
+    app.register_blueprint(skills_admin_bp, url_prefix="/admin/skills")
+    app.register_blueprint(industry_admin_bp, url_prefix="/admin/industries")
+    app.register_blueprint(opportunity_stats_bp, url_prefix="/admin/opportunities/stats")
 
     
     return app

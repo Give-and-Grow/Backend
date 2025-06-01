@@ -6,6 +6,7 @@ from ..services.user_profile_service import (
     change_password_service,
     get_own_profile_service,
     update_profile_service,
+    verify_identity_with_ocr_service,
 )
 
 profile_bp = Blueprint("profile", __name__)
@@ -36,4 +37,18 @@ def change_password():
     if not data:
         return jsonify({"message": "No data provided"}), 400
     response, status = change_password_service(account_id, data)
+    return jsonify(response), status
+
+@profile_bp.route("/verify-identity", methods=["POST"])
+@jwt_required()
+def verify_identity():
+    account_id = get_jwt_identity()
+    data = request.get_json()
+
+    if not data or 'image_url' not in data:
+        return jsonify({"message": "Image URL is required"}), 400
+
+    image_url = data["image_url"]
+
+    response, status = verify_identity_with_ocr_service(account_id, image_url)
     return jsonify(response), status
