@@ -113,8 +113,8 @@ random.shuffle(shuffled_indexes)  # Shuffle to randomize order
 
 title_index = 0
 
-for user_id in range(24, 34):  # 10 users
-    for _ in range(3):  # 3 posts per user = 30 total
+for user_id in range(40, 87):  # 10 users
+    for _ in range(1):  # 3 posts per user = 30 total
         idx = shuffled_indexes[title_index]
         title = titles[idx]
         content = contents[idx]
