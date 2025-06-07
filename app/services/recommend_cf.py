@@ -8,7 +8,7 @@ def build_rating_matrix():
     # جلب البيانات: org_id, user_id, score
     query = db.session.query(
         Opportunity.id.label("opportunity_id"),
-        Opportunity.org_id.label("org_id"),
+        Opportunity.organization_id.label("org_id"),
         OpportunityParticipant.user_id.label("user_id"),
         ParticipantEvaluation.score.label("score")
     ).join(OpportunityParticipant, ParticipantEvaluation.participant_id == OpportunityParticipant.id
