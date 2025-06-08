@@ -23,7 +23,7 @@ def get_user_by_id(user_id):
 @admin_user_bp.route("/identity", methods=["GET"])
 def get_identity_for_all_users():
     users = UserDetails.query.filter(
-        UserDetails.identity_verification_status == VerificationStatus.PENDING,
+        UserDetails.identity_verification_status == VerificationStatus.PENDING.value,  
         UserDetails.identity_picture.isnot(None),
         UserDetails.identity_picture != ""
     ).all()
@@ -38,7 +38,7 @@ def get_identity_for_all_users():
             "identity_picture": user.identity_picture,
             "verification_status": user.identity_verification_status.value,
         })
-    return jsonify(result), 200  
+    return jsonify(result), 200 
 
 @admin_user_bp.route("/identity/<int:user_id>/verification", methods=["PUT"])
 def update_verification_status(user_id):
@@ -71,7 +71,7 @@ def get_organization_by_id(org_id):
 @admin_org_bp.route("/proof", methods=["GET"])
 def get_pending_proof_for_organizations():
     organizations = OrganizationDetails.query.filter(
-        OrganizationDetails.proof_verification_status == VerificationStatus.PENDING,
+        OrganizationDetails.proof_verification_status == VerificationStatus.PENDING.value,
         OrganizationDetails.proof_image.isnot(None),
         OrganizationDetails.proof_image != ""
     ).all()

@@ -2,6 +2,7 @@ from flask import jsonify, request
 from app.models import  Opportunity, OpportunityParticipant, ParticipantStatus, ParticipantAttendance, ParticipantEvaluation
 from datetime import datetime
 from app.models.organization_details import OrganizationDetails
+from app.models.user_details import UserDetails
 from app.extensions import db
 from app.services.notification_service import notify_user
 from app.services.chat_service import add_user_to_chat_if_exists
@@ -65,6 +66,8 @@ def bulk_change_participant_status(opportunity_id, org_account_id, updates):
     }), 200
 
 def change_participant_status(opportunity_id, user_id, org_id, new_status):
+    account=UserDetails.query.filter_by(id=user_id).first()
+    account_id=account.account_id
     organization = OrganizationDetails.query.filter_by(account_id=org_id).first()
     if not organization:
         return jsonify({"error": "Unauthorized"}), 403
@@ -102,7 +105,7 @@ def change_participant_status(opportunity_id, user_id, org_id, new_status):
 
     if new_status in status_titles:
         notify_user(
-            user_id=user_id,
+            user_id=account_id,
             title=status_titles[new_status],
             body=status_bodies[new_status],
             data={

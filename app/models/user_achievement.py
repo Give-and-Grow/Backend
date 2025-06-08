@@ -6,21 +6,22 @@ from ..extensions import db
 
 class AchievementType(enum.Enum):
     GENERAL = "general"
-    LEVEL = "level"
+    DISCOUNT = "discount"
     RANKING = "ranking"
-    
-class Level(enum.Enum):
-    BEGINNER = "Beginner"
-    INTERMEDIATE = "Intermediate"
-    ADVANCED = "Advanced"
-    EXPERT = "Expert"
 
 class Ranking(enum.Enum):
-    FIRST = "First"
-    SECOND = "Second"
-    THIRD = "Third"
-    FOURTH = "Fourth"
-    FIFTH = "Fifth"    
+    PLATINUM = "Platinum"
+    GOLD = "Gold"
+    SILVER = "Silver"
+    BRONZE = "Bronze"
+
+class Level(enum.Enum):
+    LEVEL_1 = "l1"
+    LEVEL_2 = "l2"
+    LEVEL_3 = "l3"
+    LEVEL_4 = "l4"
+
+   
 
 class UserAchievement(db.Model):
     __tablename__ = "user_achievement"
