@@ -52,6 +52,8 @@ def create_app():
     from app.routes.ADMIN.user_org_admin_routes import admin_user_bp, admin_org_bp, admin_admin_bp
     from app.routes.ADMIN.admin_skills_industry_routes import skills_admin_bp, industry_admin_bp
     from app.routes.ADMIN.admin_opportunity_stats_routes import opportunity_stats_bp
+    from app.routes.ADMIN.discount_codes_routes import discount_codes_bp
+    from app.routes.ADMIN.ads_routes import ads_bp
 
 
     app.register_blueprint(auth_bp, url_prefix="/auth")   
@@ -84,6 +86,8 @@ def create_app():
     app.register_blueprint(skills_admin_bp, url_prefix="/admin/skills")
     app.register_blueprint(industry_admin_bp, url_prefix="/admin/industries")
     app.register_blueprint(opportunity_stats_bp, url_prefix="/admin/opportunities/stats")
+    app.register_blueprint(discount_codes_bp,  url_prefix="/admin/discount-codes")
+    app.register_blueprint(ads_bp, url_prefix="/admin/firebase-ads")
 
     
     return app
