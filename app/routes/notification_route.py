@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app.services.notification_service import notify_user
+from app.services.notification_service import notify_user,send_push_notification
 from app.models import Account
 from firebase_admin import firestore
 from app.config import db_firestore
@@ -142,3 +142,17 @@ def notifications_count():
     total_count = notifications_ref.get()
 
     return jsonify({"total_count": len(total_count)}), 200
+
+
+@notification_bp.route('/send', methods=['POST'])
+def send_notification():
+    data = request.get_json()
+    fcm_token = data.get('fcm_token')
+    title = data.get('title')
+    body = data.get('body')
+
+    if not all([fcm_token, title, body]):
+        return jsonify({'error': 'Missing required fields'}), 400
+
+    status_code, response_json = send_push_notification(fcm_token, title, body)
+    return jsonify({'status': status_code, 'response': response_json}), status_code
