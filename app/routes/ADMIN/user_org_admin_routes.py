@@ -1,9 +1,10 @@
 #Backend/app/routes/ADMIN/user_org_admin_routes.py
 from flask import Blueprint, request
 from app.services.ADMIN.user_org_admin_services import *
-from app.models.user_details import UserDetails, VerificationStatus
 from sqlalchemy import Enum as SqlEnum
-from app.models.organization_details import OrganizationDetails,VerificationStatus
+from app.models.user_details import UserDetails, VerificationStatus as UserVerificationStatus
+from app.models.organization_details import OrganizationDetails, VerificationStatus 
+
 
 
 admin_user_bp = Blueprint("admin_user_bp", __name__, url_prefix="/admin/users")
@@ -45,11 +46,13 @@ def update_verification_status(user_id):
     data = request.get_json()
     new_status = data.get("status")  
 
-    if new_status not in [s.value for s in VerificationStatus]:
+    if new_status not in [status.value for status in UserVerificationStatus]:
         return jsonify({"error": "Invalid status"}), 400
 
-    user = UserDetails.query.get_or_404(user_id)
-    user.identity_verification_status = VerificationStatus(new_status)
+    user = UserDetails.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    user.identity_verification_status = UserVerificationStatus(new_status)
     db.session.commit()
 
     return jsonify({"message": "Verification status updated successfully"}), 200
