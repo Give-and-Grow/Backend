@@ -77,11 +77,14 @@ def send_message_to_opportunity_chat(opportunity_id, user_id, content):
     user_details = UserDetails.query.filter_by(account_id=user_id).first()
     user_details_id = user_details.id if user_details else None
 
-    is_member = OpportunityParticipant.query.filter_by(
+    participant = OpportunityParticipant.query.filter_by(
         opportunity_id=opportunity_id,
         user_id=user_details_id,
         status=ParticipantStatus.ACCEPTED
-    ).first() or chat.opportunity.organization.account_id == user_id
+    ).first()
+    
+    is_organization_owner = chat.opportunity.organization.account_id == int(user_id)
+    is_member = participant or is_organization_owner
 
     if not is_member:
         raise PermissionError("User is not allowed to send messages in this chat")
@@ -89,7 +92,6 @@ def send_message_to_opportunity_chat(opportunity_id, user_id, content):
     chat_doc = f"opportunity_{opportunity_id}"
     chat_meta = db_firestore.collection("chats").document(chat_doc).get()
     
-    # ✅ تحقق مما إذا كانت المحادثة مقفلة
     if chat_meta.exists and chat_meta.to_dict().get("is_locked"):
         raise PermissionError("This chat is currently locked. No messages can be sent.")
 
