@@ -6,8 +6,7 @@ from app.models.account import Account ,Role
 from app.models.user_details import UserDetails
 from app.models.organization_details import OrganizationDetails
 from datetime import datetime, timezone, timedelta
-
-db_firestore = firestore.client()
+from app.config import db_firestore
 
 
 
