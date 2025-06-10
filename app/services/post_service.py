@@ -8,9 +8,8 @@ from app.services.follow_service import get_following
 from app.models.user_details import UserDetails
 from app.models.account import Account
 from app.models.organization_details import OrganizationDetails
+from app.config import db_firestore
 
-
-db_firestore = firestore.client()
 
 def create_post(user_id, title, content=None, tags=None, images=None):
     post_id = str(uuid.uuid4())

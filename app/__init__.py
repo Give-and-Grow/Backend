@@ -54,6 +54,7 @@ def create_app():
     from app.routes.ADMIN.admin_opportunity_stats_routes import opportunity_stats_bp
     from app.routes.ADMIN.discount_codes_routes import discount_codes_bp
     from app.routes.ADMIN.ads_routes import ads_bp
+    from app.routes.volunteer import volunteer_bp
 
 
     app.register_blueprint(auth_bp, url_prefix="/auth")   
@@ -88,6 +89,6 @@ def create_app():
     app.register_blueprint(opportunity_stats_bp, url_prefix="/admin/opportunities/stats")
     app.register_blueprint(discount_codes_bp,  url_prefix="/admin/discount-codes")
     app.register_blueprint(ads_bp, url_prefix="/admin/firebase-ads")
-
+    app.register_blueprint(volunteer_bp, url_prefix="/volunteers")
     
     return app

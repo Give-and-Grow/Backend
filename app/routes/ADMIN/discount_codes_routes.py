@@ -1,12 +1,13 @@
 from flask import Blueprint, request, jsonify
 from firebase_admin import firestore
 from app.utils.decorators import admin_required, organization_required
+from firebase_admin import firestore
+from app.config import db_firestore
 
 discount_codes_bp = Blueprint("discount_codes_admin", __name__)
-db_firestore = firestore.client()
 
 
-@discount_codes_bp.post("/")
+@discount_codes_bp.post("/create")
 @admin_required
 def create_discount_code():
     data = request.json
@@ -19,8 +20,7 @@ def create_discount_code():
     return jsonify({"message": "Discount code created", "id": doc_ref.id}), 201
 
 
-@discount_codes_bp.get("/")
-@admin_required
+@discount_codes_bp.get("/get")
 def get_all_discount_codes():
     docs = db_firestore.collection("discount_codes").stream()
     codes = [{"id": doc.id, **doc.to_dict()} for doc in docs]
@@ -28,7 +28,6 @@ def get_all_discount_codes():
 
 
 @discount_codes_bp.get("/<code_id>")
-@admin_required
 def get_discount_code(code_id):
     doc = db_firestore.collection("discount_codes").document(code_id).get()
     if not doc.exists:
