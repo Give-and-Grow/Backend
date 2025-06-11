@@ -1,5 +1,6 @@
 #Backend/app/routes/user_profile.py
 from flask import Blueprint, jsonify, request
+from app.models import *
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from ..services.user_profile_service import (
@@ -52,3 +53,26 @@ def verify_identity():
 
     response, status = verify_identity_with_ocr_service(account_id, image_url)
     return jsonify(response), status
+
+from flask import Blueprint, send_file
+from io import BytesIO
+from app.utils.generate_cv import generate_user_cv_word
+@profile_bp.route('/download_cv/<int:user_id>', methods=['GET'])
+def download_cv(user_id):
+    file_stream = BytesIO()
+    user = UserDetails.query.get(user_id)
+    if not user:
+        return "User not found", 404
+
+    full_name = f"{user.first_name}_{user.last_name}".replace(" ", "_")
+    filename = f"{full_name}_CV.docx"
+
+    generate_user_cv_word(user_id, file_stream)
+    file_stream.seek(0)
+
+    return send_file(
+        file_stream,
+        as_attachment=True,
+        download_name=filename,
+        mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    )
