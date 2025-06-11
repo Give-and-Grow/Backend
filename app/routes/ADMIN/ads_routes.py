@@ -15,13 +15,11 @@ def create_ad_route():
 
 
 @ads_bp.get("/")
-@admin_required
 def get_ads_route():
     return jsonify(get_all_ads()), 200
 
 
 @ads_bp.get("/<string:ad_id>")
-@admin_required
 def get_ad_route(ad_id):
     ad = get_ad_by_id(ad_id)
     if not ad:
