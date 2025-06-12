@@ -102,3 +102,14 @@ def status():
         'message': f"Logged in as {current_user_id}",
         'role': claims['role']
     }), 200
+
+@auth_bp.route('/statusid', methods=['GET'])
+@jwt_required()
+def statusid():
+    current_user_id = get_jwt_identity() 
+    claims = get_jwt()  
+
+    return jsonify({
+        'message': current_user_id,
+        'role': claims['role']
+    }), 200    
