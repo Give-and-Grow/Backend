@@ -60,14 +60,14 @@ from app.utils.generate_cv import generate_user_cv_word
 @profile_bp.route('/download_cv/<int:user_id>', methods=['GET'])
 def download_cv(user_id):
     file_stream = BytesIO()
-    user = UserDetails.query.get(user_id)
+    user = UserDetails.query.filter_by(account_id=user_id).first()
     if not user:
         return "User not found", 404
 
     full_name = f"{user.first_name}_{user.last_name}".replace(" ", "_")
     filename = f"{full_name}_CV.docx"
 
-    generate_user_cv_word(user_id, file_stream)
+    generate_user_cv_word(user.id, file_stream)
     file_stream.seek(0)
 
     return send_file(
