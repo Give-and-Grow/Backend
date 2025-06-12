@@ -192,3 +192,30 @@ class UserParticipantService:
                 "comment": evaluation.comment
             }
         }
+    
+    @staticmethod
+    def check_participation_status(user_id, opportunity_id, status=None):
+        user = UserDetails.query.filter_by(account_id=user_id).first()
+        if not user:
+            return {"is_participant": False, "status": None}
+
+        query = OpportunityParticipant.query.filter_by(
+            user_id=user.id,
+            opportunity_id=opportunity_id
+        )
+
+        if status:
+            try:
+                status_enum = ParticipantStatus(status.upper())
+                query = query.filter_by(status=status_enum)
+            except ValueError:
+                return {"error": "Invalid status value"}, 400
+
+        participant = query.first()
+
+        return {
+            "is_participant": participant is not None,
+            "status": participant.status.value if participant else None
+        }
+
+        

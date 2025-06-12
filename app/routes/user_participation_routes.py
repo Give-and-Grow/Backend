@@ -54,3 +54,13 @@ def evaluate_participation():
         return jsonify(response), status_code
 
     return jsonify(result), 200
+
+@user_participation_bp.route('/<int:opportunity_id>/is_participant', methods=['GET'])
+@jwt_required()
+def is_user_participant(opportunity_id):
+    user_id = get_jwt_identity()
+    status = request.args.get("status")  # optional: accepted, pending, rejected
+
+    result = UserParticipantService.check_participation_status(user_id, opportunity_id, status)
+
+    return jsonify(result), 200
