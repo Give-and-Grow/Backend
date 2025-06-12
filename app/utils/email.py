@@ -100,3 +100,31 @@ def send_certificate_email(user_email, user_name, opportunity_title, pdf_bytes, 
 
     # إرسال الإيميل
     mail.send(msg)
+
+
+def send_ad_status_email(email, status, store_name, reason=None):
+    if status == "accepted":
+        subject = "🎉 Your ad has been accepted!"
+        body = (
+            f"Thank you, {store_name}!\n\n"
+            "Your ad has been successfully accepted and will now appear on our platform as a supporter for premium users 🌟.\n\n"
+            "We wish you all the success!"
+        )
+    elif status == "rejected":
+        subject = "🚫 Your ad has not been accepted"
+        body = (
+            f"We apologize, {store_name}, your ad was not accepted.\n"
+            f"Reason: {reason or 'No reason specified'}\n\n"
+            "We look forward to receiving a new ad from you in the future!"
+        )
+    else:
+        subject = "📢 Your ad status"
+        body = "Please contact us for additional details regarding your ad status."
+
+    msg = Message(
+        subject,
+        sender=("Give and Grow", "baraa.shellbaya@gmail.com"),
+        recipients=[email],
+    )
+    msg.body = body
+    mail.send(msg)
