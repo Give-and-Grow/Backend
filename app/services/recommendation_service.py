@@ -45,19 +45,19 @@ class RecommendationService:
         serialized = [OpportunityService.serialize_opportunity(opp) for opp in opportunities]
         return serialized, 200
     
+import random
+from sqlalchemy.sql.expression import func
+
 def get_follow_recommendations(user_id, limit=5):
-    # 1. المستخدمين الذين يتابعهم user_id
     followed_subquery = db.session.query(Follow.followed_id).filter(
         Follow.follower_id == user_id
     ).subquery()
 
-    # 2. المستخدمون الآخرون الذين يتابعون نفس الأشخاص
     similar_users_subquery = db.session.query(Follow.follower_id).filter(
         Follow.followed_id.in_(followed_subquery),
         Follow.follower_id != user_id
     ).distinct().subquery()
 
-    # 3. الأشخاص الذين يتابعهم المستخدمون المشابهون
     recommended_query = db.session.query(
         Follow.followed_id,
         func.count(Follow.follower_id).label('score')
@@ -69,13 +69,23 @@ def get_follow_recommendations(user_id, limit=5):
 
     recommended_ids = [row.followed_id for row in recommended_query]
 
-    # 4. جلب الحسابات مع التفاصيل حسب نوع الحساب
+    if not recommended_ids:
+        fixed_user_id = 39
+        all_candidate_ids_query = db.session.query(Account.id).filter(
+            Account.id != user_id  
+        )
+        all_candidate_ids = [row.id for row in all_candidate_ids_query]
+        if fixed_user_id in all_candidate_ids:
+            all_candidate_ids.remove(fixed_user_id)
+            random_ids = random.sample(all_candidate_ids, min(limit - 1, len(all_candidate_ids)))
+            recommended_ids = [fixed_user_id] + random_ids
+        else:
+            recommended_ids = random.sample(all_candidate_ids, min(limit, len(all_candidate_ids)))
     accounts = Account.query.filter(Account.id.in_(recommended_ids)).all()
 
     results = []
 
     for account in accounts:
-        # بيانات للمستخدم العادي
         if account.role.value == "user" and account.user_details:
             full_name = f"{account.user_details.first_name} {account.user_details.last_name}"
             results.append({
@@ -85,8 +95,6 @@ def get_follow_recommendations(user_id, limit=5):
                 "name": full_name,
                 "profile_picture": account.user_details.profile_picture
             })
-
-        # بيانات للمؤسسة
         elif account.role.value == "organization" and account.organization_details:
             results.append({
                 "id": account.id,
