@@ -2,6 +2,7 @@ from app.utils.decorators import account_required
 from flask import Blueprint, jsonify, g
 from flask_jwt_extended import get_jwt_identity
 from app.services.follow_service import *
+from app.services.recommendation_service import get_follow_recommendations
 
 follow_bp = Blueprint('follow', __name__, url_prefix='/follow')
 
@@ -39,3 +40,9 @@ def get_user_following(user_id):
 @account_required
 def is_following_user(user_id):
     return jsonify({"is_following": is_following(g.user_id, user_id)})
+
+@follow_bp.get('/recommendations')
+@account_required
+def get_follow_recommendations_route():
+    recommendations = get_follow_recommendations(g.user_id, limit=10)
+    return jsonify(recommendations)    
