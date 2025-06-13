@@ -54,12 +54,12 @@ def submit_ad_request():
     return jsonify({"message": "Ad request submitted", "id": ad_id}), 201
 
 @ads_bp.get("/requests")
-@admin_required
+# @admin_required
 def get_pending_ads():
     return jsonify(get_pending_ads_service()), 200
 
 @ads_bp.put("/requests/<string:ad_id>/approve")
-@admin_required
+# @admin_required
 def approve_ad(ad_id):
     result = approve_ad_service(ad_id)
     if not result:
@@ -67,7 +67,7 @@ def approve_ad(ad_id):
     return jsonify({"message": "Ad approved, published, and email sent"})
 
 @ads_bp.put("/requests/<string:ad_id>/reject")
-@admin_required
+# @admin_required
 def reject_ad(ad_id):
     data = request.get_json()
     result = reject_ad_service(ad_id, data.get("response_message", "No reason provided"))
